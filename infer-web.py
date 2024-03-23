@@ -1282,7 +1282,27 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         api_name="train_start",
                     )
                     but4.click(train_index, [exp_dir1, version19], info3)
-    
+        
+        with gr.TabItem(i18n("Extra")):
+            with gr.Accordion('Credits', open=False):
+                gr.Markdown('''
+                ## All the amazing people who worked on this!
+                - **Ilaria**: Founder, Lead Developer
+                - **Yui**: Training feature
+                - **GDR-**: Inference feature
+                - **Poopmaster**: Model downloader, Model importer
+                - **kitlemonfoot**: Ilaria TTS implementation
+                - **eddycrack864**: UVR5 implementation
+                                
+                - **Charlotte**: Beta Tester
+                - **RME**: Beta Tester
+                - **Delik**: Beta Tester
+                                
+                - **yumereborn**: Ilaira RVC image
+                                
+                ### **In loving memory of JLabDX** 🕊️
+                ''')
+                              
         with gr.TabItem(i18n("")):
             gr.Markdown('''
                 ![ilaria](https://i.ytimg.com/vi/5PWqt2Wg-us/maxresdefault.jpg)
