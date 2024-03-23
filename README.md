@@ -80,7 +80,7 @@ Don’t worry if you’re not a tech whiz. Ilaria RVC is designed to be easy to 
 
 ### Other
 
-- **yumereborn**: Ilaira RVC image
+- **yumereborn**: Ilaria RVC image
 
 ### **In loving memory of JLabDX** 🕊️
 
