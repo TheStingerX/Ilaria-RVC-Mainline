@@ -1,0 +1,3 @@
+here you put your dataset (audio file) before starting the training process
+
+if you were in ai hub you would knew... smh...
