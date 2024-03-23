@@ -88,7 +88,7 @@ Don’t worry if you’re not a tech whiz. Ilaria RVC is designed to be easy to 
 ## 🤝 Contributing 🤝
 
 Interested in contributing to this project? Ilaria is always looking for collaborators.  
-Feel free to open a pull request on Hugging Face.
+Feel free to open a pull request on Github.
 
 ## 📄 License 📄
 
