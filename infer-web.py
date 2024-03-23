@@ -1287,17 +1287,30 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
             with gr.Accordion('Credits', open=False):
                 gr.Markdown('''
                 ## All the amazing people who worked on this!
+                
+                ### Developers
+                
                 - **Ilaria**: Founder, Lead Developer
                 - **Yui**: Training feature
                 - **GDR-**: Inference feature
                 - **Poopmaster**: Model downloader, Model importer
                 - **kitlemonfoot**: Ilaria TTS implementation
                 - **eddycrack864**: UVR5 implementation
-                                
+                
+                ### Beta Tester
+                
                 - **Charlotte**: Beta Tester
                 - **RME**: Beta Tester
                 - **Delik**: Beta Tester
-                                
+                
+                ### Pretrains Makers
+
+                - **simplcup**: Ov2Super
+                - **mustar22**: RIN_E3
+                - **mustar22**: Snowie
+                
+                ### Other
+                
                 - **yumereborn**: Ilaira RVC image
                                 
                 ### **In loving memory of JLabDX** 🕊️
