@@ -26,6 +26,7 @@ import threading
 import shutil
 import logging
 from dotenv import load_dotenv
+
 import edge_tts, asyncio
 from infer.modules.vc.ilariatts import tts_order_voice
 language_dict = tts_order_voice
@@ -154,6 +155,23 @@ def change_choices():
         "__type__": "update",
     }
 
+
+# Define the tts_and_convert function
+def tts_and_convert(ttsvoice, text, spk_item, vc_transform, f0_file, f0method, file_index1, file_index2, index_rate, filter_radius, resample_sr, rms_mix_rate, protect):
+
+    # Perform TTS (we only need 1 function)
+    vo=language_dict[ttsvoice]
+    asyncio.run(edge_tts.Communicate(text, vo).save("./TEMP/temp_ilariatts.mp3"))
+    aud_path = './TEMP/temp_ilariatts.mp3'
+
+    # Update output Textbox
+    vc_output1.update("Text converted successfully!")
+
+    #Calls vc similar to any other inference.
+    #This is why we needed all the other shit in our call, otherwise we couldn't infer.
+    return vc.vc_single(spk_item, aud_path, vc_transform, f0_file, f0method, file_index1, file_index2, index_rate, filter_radius, resample_sr, rms_mix_rate, protect)
+
+
 def import_files(file):
     if file is not None:
         file_name = file.name
@@ -212,7 +230,6 @@ sr_dict = {
     "40k": 40000,
     "48k": 48000,
 }
-
 
 def if_done(done, p):
     while 1:
@@ -487,7 +504,6 @@ def get_pretrained_models(path_str, f0_str, sr2):
         else "",
     )
 
-
 def change_sr2(sr2, if_f0_3, version19):
     path_str = "" if version19 == "v1" else "_v2"
     f0_str = "f0" if if_f0_3 else ""
@@ -756,13 +772,11 @@ def change_f0_method(f0method8):
         visible = False
     return {"visible": visible, "__type__": "update"}
 
-def ilariaTTS(text, ttsvoice):
-    vo=language_dict[ttsvoice]
-    asyncio.run(edge_tts.Communicate(text, vo).save("./temp_ilariatts.mp3"))
-    aud_path = './temp_ilariatts.mp3'
-    return aud_path
+vc_output1 = gr.Textbox(label=i18n("Output"))
+vc_output2 = gr.Audio(label=i18n("Output Audio"))
 
-
+with gr.Blocks(title="Ilaria RVC 💖") as app:
+    gr.Markdown("<h1>  Ilaria RVC 💖   </h1>")
 with gr.Blocks(title="Ilaria RVC 💖") as app:
     gr.Markdown("<h1>  Ilaria RVC 💖   </h1>")
     gr.Markdown(value=i18n("Made with 💖 by Ilaria | Support her on [Ko-Fi](https://ko-fi.com/ilariaowo)"))
@@ -810,13 +824,6 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                                     inputs=[record_button],
                                     outputs=[input_audio0],
                                 )
-                                with gr.Accordion('IlariaTTS', open=False):
-                                    with gr.Column():
-                                        ilariaid=gr.Dropdown(label="Voice:", choices=ilariavoices, value="English-Jenny (Female)")
-                                        ilariatext = gr.Textbox(label="Input your Text", interactive=True, value="This is a test.")
-                                        ilariatts_button = gr.Button(value="Speak")
-                                        ilariatts_button.click(fn=ilariaTTS, inputs=[ilariatext, ilariaid], outputs=[input_audio0])
-
                                 file_index1 = gr.Textbox(
                                     label=i18n("Path of index"),
                                     placeholder="%userprofile%\\Desktop\\models\\model_example.index",
@@ -829,83 +836,104 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                                     interactive=True,
                                     visible=False,
                                 )
-                        with gr.Accordion('Advanced Settings', open=False):
-                            with gr.Column():
-                                f0method0 = gr.Radio(
-                                    label=i18n("Pitch Extraction, rmvpe is best"),
-                                    choices=["harvest", "crepe", "rmvpe"]
-                                    if config.dml is False
-                                    else ["harvest", "rmvpe"],
-                                    value="rmvpe",
-                                    interactive=True,
-                                )
-                                resample_sr0 = gr.Slider(
-                                    minimum=0,
-                                    maximum=48000,
-                                    label=i18n("Resampling, 0=none"),
-                                    value=0,
-                                    step=1,
-                                    interactive=True,
-                                )
-                                rms_mix_rate0 = gr.Slider(
-                                    minimum=0,
-                                    maximum=1,
-                                    label=i18n("0=Input source volume, 1=Normalized Output"),
-                                    value=0.25,
-                                    interactive=True,
-                                )
-                                protect0 = gr.Slider(
-                                    minimum=0,
-                                    maximum=0.5,
-                                    label=i18n(
-                                        "Protect clear consonants and breathing sounds, preventing electro-acoustic tearing and other artifacts, 0.5 does not open"),
-                                    value=0.33,
-                                    step=0.01,
-                                    interactive=True,
-                                )
-                                filter_radius0 = gr.Slider(
-                                    minimum=0,
-                                    maximum=7,
-                                    label=i18n(">=3 apply median filter to the harvested pitch results"),
-                                    value=3,
-                                    step=1,
-                                    interactive=True,
-                                )
-                                index_rate1 = gr.Slider(
-                                    minimum=0,
-                                    maximum=1,
-                                    label=i18n("Index Ratio"),
-                                    value=0.40,
-                                    interactive=True,
-                                )
-                                f0_file = gr.File(
-                                    label=i18n("F0 curve file [optional]"),
-                                    visible=False,
-                                )
+                        with gr.Column():
+                            with gr.Accordion('Advanced Settings', open=False):
+                                with gr.Column():
+                                    f0method0 = gr.Radio(
+                                        label=i18n("Pitch Extraction, rmvpe is best"),
+                                        choices=["harvest", "crepe", "rmvpe"]
+                                        if config.dml is False
+                                        else ["harvest", "rmvpe"],
+                                        value="rmvpe",
+                                        interactive=True,
+                                    )
+                                    resample_sr0 = gr.Slider(
+                                        minimum=0,
+                                        maximum=48000,
+                                        label=i18n("Resampling, 0=none"),
+                                        value=0,
+                                        step=1,
+                                        interactive=True,
+                                    )
+                                    rms_mix_rate0 = gr.Slider(
+                                        minimum=0,
+                                        maximum=1,
+                                        label=i18n("0=Input source volume, 1=Normalized Output"),
+                                        value=0.25,
+                                        interactive=True,
+                                    )
+                                    protect0 = gr.Slider(
+                                        minimum=0,
+                                        maximum=0.5,
+                                        label=i18n(
+                                            "Protect clear consonants and breathing sounds, preventing electro-acoustic tearing and other artifacts, 0.5 does not open"),
+                                        value=0.33,
+                                        step=0.01,
+                                        interactive=True,
+                                    )
+                                    filter_radius0 = gr.Slider(
+                                        minimum=0,
+                                        maximum=7,
+                                        label=i18n(">=3 apply median filter to the harvested pitch results"),
+                                        value=3,
+                                        step=1,
+                                        interactive=True,
+                                    )
+                                    index_rate1 = gr.Slider(
+                                        minimum=0,
+                                        maximum=1,
+                                        label=i18n("Index Ratio"),
+                                        value=0.40,
+                                        interactive=True,
+                                    )
+                                    f0_file = gr.File(
+                                        label=i18n("F0 curve file [optional]"),
+                                        visible=False,
+                                    )
 
-                                refresh_button.click(
-                                    fn=change_choices,
-                                    inputs=[],
-                                    outputs=[sid0, file_index2],
-                                    api_name="infer_refresh",
-                                )
-                                file_index1 = gr.Textbox(
-                                    label=i18n("Path of index"),
-                                    placeholder="%userprofile%\\Desktop\\models\\model_example.index",
-                                    interactive=True,
-                                )
-                                file_index2 = gr.Dropdown(
-                                    label=i18n("Auto-detect index path"),
-                                    choices=sorted(index_paths),
-                                    interactive=True,
-                                )
+                                    refresh_button.click(
+                                        fn=change_choices,
+                                        inputs=[],
+                                        outputs=[sid0, file_index2],
+                                        api_name="infer_refresh",
+                                    )
+                                    file_index1 = gr.Textbox(
+                                        label=i18n("Path of index"),
+                                        placeholder="%userprofile%\\Desktop\\models\\model_example.index",
+                                        interactive=True,
+                                    )
+                                    file_index2 = gr.Dropdown(
+                                        label=i18n("Auto-detect index path"),
+                                        choices=sorted(index_paths),
+                                        interactive=True,
+                                    )
+                            with gr.Accordion('IlariaTTS', open=True):
+                                with gr.Column():
+                                    ilariaid=gr.Dropdown(label="Voice:", choices=ilariavoices, interactive=True, value="English-Jenny (Female)")
+                                    ilariatext = gr.Textbox(label="Input your Text", interactive=True, value="This is a test.")   
+                                    ilariatts_button = gr.Button(value="Speak and Convert")
+                                    ilariatts_button.click(tts_and_convert,
+                                                           [ilariaid,
+                                                            ilariatext,
+                                                            spk_item,
+                                                            vc_transform0,
+                                                            f0_file,
+                                                            f0method0,
+                                                            file_index1,
+                                                            file_index2,
+                                                            index_rate1,
+                                                            filter_radius0,
+                                                            resample_sr0,
+                                                            rms_mix_rate0,
+                                                            protect0]
+                                                           , [vc_output1, vc_output2])
 
                 with gr.Group():
                     with gr.Column():
                         but0 = gr.Button(i18n("Conversion"), variant="primary")
                         with gr.Row():
-                            vc_output1 = gr.Textbox(label=i18n("Output"))
-                            vc_output2 = gr.Audio(label=i18n("Output Audio"))
+                            vc_output1.render()
+                            vc_output2.render()
 
                         but0.click(
                             vc.vc_single,
@@ -1284,8 +1312,9 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     but4.click(train_index, [exp_dir1, version19], info3)
         
         with gr.TabItem(i18n("Extra")):
-            with gr.Accordion('Credits', open=False):
-                gr.Markdown('''
+                                  
+                with gr.Accordion('Credits', open=False):
+                    gr.Markdown('''
                 ## All the amazing people who worked on this!
                 
                 ### Developers
@@ -1315,21 +1344,11 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                                 
                 ### **In loving memory of JLabDX** 🕊️
                 ''')
-                              
+                                           
         with gr.TabItem(i18n("")):
             gr.Markdown('''
                 ![ilaria](https://i.ytimg.com/vi/5PWqt2Wg-us/maxresdefault.jpg)
             ''')
-            with gr.Tabs():
-                with gr.TabItem("Credits"):
-                    gr.Markdown('''
-                        Ilaria created everything lol.
-                    ''')
-                with gr.TabItem("FAQ"):
-                    gr.Markdown('''
-                        ![miko](https://i.ytimg.com/vi/7y5oyUbmv_8/mqdefault.jpg)
-                        Obligatory Miko.
-                    ''')
     if config.iscolab:
         app.queue(concurrency_count=511, max_size=1022).launch(share=True)
     else:
