@@ -8,7 +8,7 @@ from io import BytesIO
 
 
 def wav2(i, o, format):
-    inp = av.open(i, "rb")
+    inp = av.open(i, "r")
     if format == "m4a":
         format = "mp4"
     out = av.open(o, "wb", format=format)
@@ -31,8 +31,8 @@ def wav2(i, o, format):
 
 
 def audio2(i, o, format, sr):
-    inp = av.open(i, "rb")
-    out = av.open(o, "wb", format=format)
+    inp = av.open(i, "r")  # Change mode to "r"
+    out = av.open(o, "w", format=format)  # Change mode to "w"
     if format == "ogg":
         format = "libvorbis"
     if format == "f32le":
