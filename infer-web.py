@@ -1434,11 +1434,12 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 but4.click(train_index, [exp_dir1, version19], info3)
         
         with gr.TabItem(i18n("Extra")):
-                with gr.Accordion('Model Info', open=True):
+                with gr.Accordion('Model Info', open=False):
                     with gr.Column():
                         sid1 = gr.Dropdown(label=i18n("Voice Model"), choices=sorted(names))
                         modelload_out = gr.Textbox(label="Model Metadata")
-                with gr.Accordion('Audio Analyser', open=True):
+                        
+                with gr.Accordion('Audio Analyser', open=False):
                     with gr.Column():
                         audio_input = gr.Audio(type="filepath")
                         get_info_button = gr.Button(
