@@ -1372,35 +1372,44 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 file_dict = {k: v for k, v in file_dict.items() if k.endswith(".pth")}
                 file_dict_g = {k: v for k, v in file_dict.items() if "G" in k and "f0" in k}
                 file_dict_d = {k: v for k, v in file_dict.items() if "D" in k and "f0" in k}
+                pretrained_G14_path = gr.State()
+                pretrained_D15_path = gr.State()
 
+            def process_selection(selected_model):
+                if 'G' in selected_model:
+                    new_pretrained_G14_path = file_dict_g[selected_model]
+                    associated_d_model_key = selected_model.replace('G', 'D')
+                    new_pretrained_D15_path = file_dict_d.get(associated_d_model_key, None)
+                else:
+                    new_pretrained_G14_path = None
+                    new_pretrained_D15_path = None
+                pretrained_G14_path.value = new_pretrained_G14_path
+                pretrained_D15_path.value = new_pretrained_D15_path
+                return new_pretrained_G14_path, new_pretrained_D15_path     
+              
             with gr.Row():
-                pretrained_G14 = gr.Dropdown(
-                    label=i18n("Pretrained G"),
-                    choices=list(file_dict_g.values()),
-                    value=file_dict_g['f0G32k.pth'],
-                    interactive=True,
+                select_pretrain = gr.Dropdown(
+                    label=i18n("Select Pretrained Model"),
+                     choices=list(file_dict_g.keys()),
+                     value=next(iter(file_dict_g.values())),
+                     interactive=True,
                 )
+                select_pretrain.change(process_selection, inputs=[select_pretrain], outputs=[pretrained_G14_path, pretrained_D15_path])
 
-                pretrained_D15 = gr.Dropdown(
-                    label=i18n("Pretrained D"),
-                    choices=list(file_dict_d.values()),
-                    value=file_dict_d['f0D32k.pth'],
-                    interactive=True,
-                )
                 sr2.change(
                     change_sr2,
                     [sr2, if_f0_3, version19],
-                    [pretrained_G14, pretrained_D15],
+                    [pretrained_G14_path, pretrained_D15_path],
                 )
                 version19.change(
                     change_version19,
                     [sr2, if_f0_3, version19],
-                    [pretrained_G14, pretrained_D15, sr2],
+                    [pretrained_G14_path, pretrained_D15_path, sr2],
                 )
                 if_f0_3.change(
                     change_f0,
                     [if_f0_3, sr2, version19],
-                    [f0method8, gpus_rmvpe, pretrained_G14, pretrained_D15],
+                    [f0method8, gpus_rmvpe, pretrained_G14_path, pretrained_D15_path],
                 )
                 gpus16 = gr.Textbox(
                     label=i18n("Enter cards to be used (Leave 0 if you have only one GPU, use 0-1 for multiple GPus)"),
@@ -1421,8 +1430,8 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         total_epoch11,
                         batch_size12,
                         if_save_latest13,
-                        pretrained_G14,
-                        pretrained_D15,
+                        pretrained_G14_path,
+                        pretrained_D15_path,
                         gpus16,
                         if_cache_gpu17,
                         if_save_every_weights18,
