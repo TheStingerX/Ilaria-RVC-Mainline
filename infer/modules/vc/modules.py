@@ -129,11 +129,13 @@ class VC:
         else:
             self.net_g = self.net_g.float()
 
+        model_hash = hashlib.md5(open(person, "rb").read()).hexdigest()
+
         self.pipeline = Pipeline(self.tgt_sr, self.config)
         n_spk = self.cpt["config"][-3]
         index = {"value": get_index_path_from_model(sid), "__type__": "update"}
         logger.info("Select index: " + index["value"])
-        fstr = f"Epochs: {self.eps} | Sample Rate: {self.tgt_sr} | Version: {self.version}"
+        fstr = f"Epochs: {self.eps[:-5] if self.eps.endswith('epoch') else self.eps}\nSample Rate: {self.tgt_sr}\nVersion: {self.version}\nHash: {model_hash}"
         logger.info(fstr)
 
         return (
