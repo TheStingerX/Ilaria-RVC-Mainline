@@ -781,7 +781,9 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
     with gr.Tabs():
         with gr.TabItem(i18n("Inference")):
             with gr.Row():
-                sid0 = gr.Dropdown(label=i18n("Voice"), choices=sorted(names))
+                sid0= gr.Dropdown(label=i18n("Voice"), choices=sorted(names))
+                sid1= sid0
+                
                 with gr.Column():
                     refresh_button = gr.Button(i18n("Refresh"), variant="primary")
                     clean_button = gr.Button(i18n("Unload Voice from VRAM"), variant="primary")
@@ -797,7 +799,6 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 clean_button.click(
                     fn=clean, inputs=[], outputs=[sid0], api_name="infer_clean"
                 )
-            modelload_out = gr.Textbox(label="Model Metadata")
             with gr.TabItem(i18n("Inference")):
                 with gr.Group():
                     with gr.Row():
@@ -1165,12 +1166,6 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         [vc_output3],
                         api_name="infer_convert_batch",
                     )
-                sid0.change(
-                    fn=vc.get_vc,
-                    inputs=[sid0, protect0, protect1],
-                    outputs=[spk_item, protect0, protect1, file_index2, file_index4, modelload_out],
-                    api_name="infer_change_voice",
-                )
         with gr.TabItem(i18n("Train")):
             gr.Markdown(value=i18n(""))
             with gr.Row():
@@ -1387,7 +1382,11 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 but4.click(train_index, [exp_dir1, version19], info3)
         
         with gr.TabItem(i18n("Extra")):
-                                  
+                with gr.Accordion('Model Info', open=True):
+                    with gr.Column():
+                        sid1 = gr.Dropdown(label=i18n("Voice Model"), choices=sorted(names))
+                        modelload_out = gr.Textbox(label="Model Metadata")
+
                 with gr.Accordion('Credits', open=False):
                     gr.Markdown('''
                 ## All the amazing people who worked on this!
@@ -1419,7 +1418,19 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                                 
                 ### **In loving memory of JLabDX** 🕊️
                 ''')
-                                           
+                
+                sid0.change(
+                    fn=vc.get_vc,
+                    inputs=[sid0, protect0, protect1],
+                    outputs=[spk_item, protect0, protect1, file_index2, file_index4, modelload_out],
+                    api_name="infer_change_voice",
+                )      
+                sid1.change(
+                    fn=vc.get_vc,
+                    inputs=[sid1, protect0, protect1],
+                    outputs=[spk_item, protect0, protect1, file_index2, file_index4, modelload_out],
+                    api_name="infer_change_voice",
+                )                        
         with gr.TabItem(i18n("")):
             gr.Markdown('''
                 ![ilaria](https://i.ytimg.com/vi/5PWqt2Wg-us/maxresdefault.jpg)
