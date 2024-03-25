@@ -777,8 +777,6 @@ vc_output2 = gr.Audio(label=i18n("Output Audio"))
 
 with gr.Blocks(title="Ilaria RVC 💖") as app:
     gr.Markdown("<h1>  Ilaria RVC 💖   </h1>")
-with gr.Blocks(title="Ilaria RVC 💖") as app:
-    gr.Markdown("<h1>  Ilaria RVC 💖   </h1>")
     gr.Markdown(value=i18n("Made with 💖 by Ilaria | Support her on [Ko-Fi](https://ko-fi.com/ilariaowo)"))
     with gr.Tabs():
         with gr.TabItem(i18n("Inference")):
@@ -799,19 +797,13 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 clean_button.click(
                     fn=clean, inputs=[], outputs=[sid0], api_name="infer_clean"
                 )
+            modelload_out = gr.Textbox(label="Model Metadata")
             with gr.TabItem(i18n("Inference")):
                 with gr.Group():
                     with gr.Row():
                         with gr.Column():
                             with gr.Accordion('Settings', open=True):
-                                vc_transform0 = gr.inputs.Slider(
-                                    label=i18n(
-                                        "Pitch: 0 from man to man (or woman to woman); 12 from man to woman and -12 from woman to man."),
-                                    minimum=-12,
-                                    maximum=12,
-                                    default=0,
-                                    step=1,
-                                )
+
                                 
                                 input_audio0 = gr.Audio(
                                     label=i18n("Upload Audio file"),
@@ -837,7 +829,17 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                                     visible=False,
                                 )
                         with gr.Column():
-                            with gr.Accordion('Advanced Settings', open=False):
+                            
+                            vc_transform0 = gr.inputs.Slider(
+                                label=i18n(
+                                    "Pitch: 0 from man to man (or woman to woman); 12 from man to woman and -12 from woman to man."),
+                                minimum=-12,
+                                maximum=12,
+                                default=0,
+                                step=1,
+                            )
+                                    
+                            with gr.Accordion('Advanced Settings', open=False, visible=False):
                                 with gr.Column():
                                     f0method0 = gr.Radio(
                                         label=i18n("Pitch Extraction, rmvpe is best"),
@@ -907,6 +909,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                                         choices=sorted(index_paths),
                                         interactive=True,
                                     )
+                                    
                             with gr.Accordion('IlariaTTS', open=True):
                                 with gr.Column():
                                     ilariaid=gr.Dropdown(label="Voice:", choices=ilariavoices, interactive=True, value="English-Jenny (Female)")
@@ -927,6 +930,78 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                                                             rms_mix_rate0,
                                                             protect0]
                                                            , [vc_output1, vc_output2])
+                            
+                                      #Otherwise everything break, to be optimized
+                            with gr.Accordion('Advanced Settings', open=False, visible=True):
+                                with gr.Column():
+                                    f0method0 = gr.Radio(
+                                        label=i18n("Pitch Extraction, rmvpe is best"),
+                                        choices=["harvest", "crepe", "rmvpe"]
+                                        if config.dml is False
+                                        else ["harvest", "rmvpe"],
+                                        value="rmvpe",
+                                        interactive=True,
+                                    )
+                                    resample_sr0 = gr.Slider(
+                                        minimum=0,
+                                        maximum=48000,
+                                        label=i18n("Resampling, 0=none"),
+                                        value=0,
+                                        step=1,
+                                        interactive=True,
+                                    )
+                                    rms_mix_rate0 = gr.Slider(
+                                        minimum=0,
+                                        maximum=1,
+                                        label=i18n("0=Input source volume, 1=Normalized Output"),
+                                        value=0.25,
+                                        interactive=True,
+                                    )
+                                    protect0 = gr.Slider(
+                                        minimum=0,
+                                        maximum=0.5,
+                                        label=i18n(
+                                            "Protect clear consonants and breathing sounds, preventing electro-acoustic tearing and other artifacts, 0.5 does not open"),
+                                        value=0.33,
+                                        step=0.01,
+                                        interactive=True,
+                                    )
+                                    filter_radius0 = gr.Slider(
+                                        minimum=0,
+                                        maximum=7,
+                                        label=i18n(">=3 apply median filter to the harvested pitch results"),
+                                        value=3,
+                                        step=1,
+                                        interactive=True,
+                                    )
+                                    index_rate1 = gr.Slider(
+                                        minimum=0,
+                                        maximum=1,
+                                        label=i18n("Index Ratio"),
+                                        value=0.40,
+                                        interactive=True,
+                                    )
+                                    f0_file = gr.File(
+                                        label=i18n("F0 curve file [optional]"),
+                                        visible=False,
+                                    )
+
+                                    refresh_button.click(
+                                        fn=change_choices,
+                                        inputs=[],
+                                        outputs=[sid0, file_index2],
+                                        api_name="infer_refresh",
+                                    )
+                                    file_index1 = gr.Textbox(
+                                        label=i18n("Path of index"),
+                                        placeholder="%userprofile%\\Desktop\\models\\model_example.index",
+                                        interactive=True,
+                                    )
+                                    file_index2 = gr.Dropdown(
+                                        label=i18n("Auto-detect index path"),
+                                        choices=sorted(index_paths),
+                                        interactive=True,
+                                    )
 
                 with gr.Group():
                     with gr.Column():
@@ -1093,7 +1168,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 sid0.change(
                     fn=vc.get_vc,
                     inputs=[sid0, protect0, protect1],
-                    outputs=[spk_item, protect0, protect1, file_index2, file_index4],
+                    outputs=[spk_item, protect0, protect1, file_index2, file_index4, modelload_out],
                     api_name="infer_change_voice",
                 )
         with gr.TabItem(i18n("Train")):
@@ -1251,65 +1326,65 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 file_dict_g = {k: v for k, v in file_dict.items() if "G" in k and "f0" in k}
                 file_dict_d = {k: v for k, v in file_dict.items() if "D" in k and "f0" in k}
 
-                with gr.Row():
-                    pretrained_G14 = gr.Dropdown(
-                        label=i18n("Pretrained G"),
-                        choices=list(file_dict_g.values()),
-                        value=file_dict_g['f0G32k.pth'],
-                        interactive=True,
-                    )
+            with gr.Row():
+                pretrained_G14 = gr.Dropdown(
+                    label=i18n("Pretrained G"),
+                    choices=list(file_dict_g.values()),
+                    value=file_dict_g['f0G32k.pth'],
+                    interactive=True,
+                )
 
-                    pretrained_D15 = gr.Dropdown(
-                        label=i18n("Pretrained D"),
-                        choices=list(file_dict_d.values()),
-                        value=file_dict_d['f0D32k.pth'],
-                        interactive=True,
-                    )
-                    sr2.change(
-                        change_sr2,
-                        [sr2, if_f0_3, version19],
-                        [pretrained_G14, pretrained_D15],
-                    )
-                    version19.change(
-                        change_version19,
-                        [sr2, if_f0_3, version19],
-                        [pretrained_G14, pretrained_D15, sr2],
-                    )
-                    if_f0_3.change(
-                        change_f0,
-                        [if_f0_3, sr2, version19],
-                        [f0method8, gpus_rmvpe, pretrained_G14, pretrained_D15],
-                    )
-                    gpus16 = gr.Textbox(
-                        label=i18n("Enter cards to be used (Leave 0 if you have only one GPU, use 0-1 for multiple GPus)"),
-                        value=gpus,
-                        interactive=True,
-                    )
-                    but3 = gr.Button(i18n("Train Model"), variant="primary")
-                    but4 = gr.Button(i18n("Train Index"), variant="primary")
-                    info3 = gr.Textbox(label=i18n("Output"), value="", max_lines=10)
-                    but3.click(
-                        click_train,
-                        [
-                            exp_dir1,
-                            sr2,
-                            if_f0_3,
-                            spk_id5,
-                            save_epoch10,
-                            total_epoch11,
-                            batch_size12,
-                            if_save_latest13,
-                            pretrained_G14,
-                            pretrained_D15,
-                            gpus16,
-                            if_cache_gpu17,
-                            if_save_every_weights18,
-                            version19,
-                        ],
-                        info3,
-                        api_name="train_start",
-                    )
-                    but4.click(train_index, [exp_dir1, version19], info3)
+                pretrained_D15 = gr.Dropdown(
+                    label=i18n("Pretrained D"),
+                    choices=list(file_dict_d.values()),
+                    value=file_dict_d['f0D32k.pth'],
+                    interactive=True,
+                )
+                sr2.change(
+                    change_sr2,
+                    [sr2, if_f0_3, version19],
+                    [pretrained_G14, pretrained_D15],
+                )
+                version19.change(
+                    change_version19,
+                    [sr2, if_f0_3, version19],
+                    [pretrained_G14, pretrained_D15, sr2],
+                )
+                if_f0_3.change(
+                    change_f0,
+                    [if_f0_3, sr2, version19],
+                    [f0method8, gpus_rmvpe, pretrained_G14, pretrained_D15],
+                )
+                gpus16 = gr.Textbox(
+                    label=i18n("Enter cards to be used (Leave 0 if you have only one GPU, use 0-1 for multiple GPus)"),
+                    value=gpus,
+                    interactive=True,
+                )
+                but3 = gr.Button(i18n("Train Model"), variant="primary")
+                but4 = gr.Button(i18n("Train Index"), variant="primary")
+                info3 = gr.Textbox(label=i18n("Output"), value="", max_lines=10)
+                but3.click(
+                    click_train,
+                    [
+                        exp_dir1,
+                        sr2,
+                        if_f0_3,
+                        spk_id5,
+                        save_epoch10,
+                        total_epoch11,
+                        batch_size12,
+                        if_save_latest13,
+                        pretrained_G14,
+                        pretrained_D15,
+                        gpus16,
+                        if_cache_gpu17,
+                        if_save_every_weights18,
+                        version19,
+                    ],
+                    info3,
+                    api_name="train_start",
+                )
+                but4.click(train_index, [exp_dir1, version19], info3)
         
         with gr.TabItem(i18n("Extra")):
                                   
