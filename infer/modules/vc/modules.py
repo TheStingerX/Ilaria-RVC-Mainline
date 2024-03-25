@@ -137,7 +137,7 @@ class VC:
         logger.info("Select index: " + index["value"])
 
         if self.eps == 'N/A':
-            epoch_str = "This is a v1 model, epochs were not used."
+            epoch_str = "This is a v1 model, on some older models epochs were not used."
         else:
             epoch_str = self.eps[:-5] if self.eps.endswith('epoch') else self.eps
 
