@@ -1404,7 +1404,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 )
                 gpus16 = gr.Textbox(
                     label=i18n("Enter cards to be used (Leave 0 if you have only one GPU, use 0-1 for multiple GPus)"),
-                    value=gpus,
+                    value=gpus if gpus != "" else "0",
                     interactive=True,
                 )
                 but3 = gr.Button(i18n("Train Model"), variant="primary")
