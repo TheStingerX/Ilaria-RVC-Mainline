@@ -824,8 +824,8 @@ def change_f0_method(f0method8):
         visible = False
     return {"visible": visible, "__type__": "update"}
 
-vc_output1 = gr.Textbox(label=i18n("Output"))
-vc_output2 = gr.Audio(label=i18n("Output Audio"))
+vc_output1 = gr.Textbox(label=i18n("Console"))
+vc_output2 = gr.Audio(label=i18n("Audio output"))
 
 with gr.Blocks(title="Ilaria RVC 💖") as app:
     gr.Markdown("<h1>  Ilaria RVC 💖   </h1>")
@@ -855,7 +855,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 with gr.Group():
                     with gr.Row():
                         with gr.Column():
-                            with gr.Accordion('Settings', open=True):
+                            with gr.Accordion('Audio input', open=True):
 
                                 
                                 input_audio0 = gr.Audio(
@@ -1058,7 +1058,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
 
                 with gr.Group():
                     with gr.Column():
-                        but0 = gr.Button(i18n("Conversion"), variant="primary")
+                        but0 = gr.Button(i18n("Convert"), variant="primary")
                         with gr.Row():
                             vc_output1.render()
                             vc_output2.render()
@@ -1193,8 +1193,8 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     )
 
                 with gr.Row():
-                    but1 = gr.Button(i18n("Conversions"), variant="primary")
-                    vc_output3 = gr.Textbox(label=i18n("Output"))
+                    but1 = gr.Button(i18n("Convert"), variant="primary")
+                    vc_output3 = gr.Textbox(label=i18n("Console"))
 
                     but1.click(
                         vc.vc_multi,
