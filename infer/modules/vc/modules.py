@@ -8,6 +8,7 @@ import numpy as np
 import soundfile as sf
 import torch
 from io import BytesIO
+import hashlib
 
 from infer.lib.audio import load_audio, wav2
 from infer.lib.infer_pack.models import (
@@ -104,6 +105,9 @@ class VC:
         self.cpt["config"][-3] = self.cpt["weight"]["emb_g.weight"].shape[0]  # n_spk
         self.if_f0 = self.cpt.get("f0", 1)
         self.version = self.cpt.get("version", "v1")
+        self.eps = self.cpt["info"]
+        if(self.eps==""):
+            self.eps="N/A"
 
         synthesizer_class = {
             ("v1", 1): SynthesizerTrnMs256NSFsid,
@@ -125,10 +129,14 @@ class VC:
         else:
             self.net_g = self.net_g.float()
 
+        model_hash = hashlib.md5(open(person, "rb").read()).hexdigest()
+
         self.pipeline = Pipeline(self.tgt_sr, self.config)
         n_spk = self.cpt["config"][-3]
         index = {"value": get_index_path_from_model(sid), "__type__": "update"}
         logger.info("Select index: " + index["value"])
+        fstr = f"Epochs: {self.eps[:-5] if self.eps.endswith('epoch') else self.eps}\nSample Rate: {self.tgt_sr}\nVersion: {self.version}\nHash: {model_hash}"
+        logger.info(fstr)
 
         return (
             (
@@ -137,6 +145,7 @@ class VC:
                 to_return_protect1,
                 index,
                 index,
+                fstr,
             )
             if to_return_protect
             else {"visible": True, "maximum": n_spk, "__type__": "update"}

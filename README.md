@@ -65,6 +65,7 @@ Don’t worry if you’re not a tech whiz. Ilaria RVC is designed to be easy to 
 - **Poopmaster**: Model downloader, Model importer
 - **kitlemonfoot**: Ilaria TTS implementation
 - **eddycrack864**: UVR5 implementation
+- **Diablo**: Various fixes
 
 ### Beta Tester
 
@@ -80,6 +81,7 @@ Don’t worry if you’re not a tech whiz. Ilaria RVC is designed to be easy to 
 
 ### Other
 
+- **RVC Project**: Original Developers
 - **yumereborn**: Ilaria RVC image
 
 ### **In loving memory of JLabDX** 🕊️
