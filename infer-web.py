@@ -17,6 +17,7 @@ import faiss
 import fairseq
 import pathlib
 import json
+from pydub import AudioSegment
 from time import sleep
 from subprocess import Popen
 from random import shuffle
@@ -272,10 +273,42 @@ def import_files(file):
 def import_button_click(file):
     return import_files(file)
 
+
+def get_audio_duration(audio_file_path):
+    # Retrieve audio file info using the soundfile library
+    audio_info = sf.info(audio_file_path)
+    # Convert duration in seconds to minutes
+    duration_minutes = audio_info.duration / 60
+    return duration_minutes
       
 def clean():
     return {"value": "", "__type__": "update"}
 
+def get_training_info(audio_file):
+    duration = get_audio_duration(audio_file)
+
+    training_params = {
+        (0, 2): (150, 'Ov2'),
+        (2, 3): (200, 'Ov2'),
+        (3, 5): (250, 'Ov2'),
+        (5, 10): (300, 'Normal'),
+        (10, 25): (500, 'Normal'),
+        (25, 45): (700, 'Normal'),
+        (45, 60): (1000, 'Normal')
+    }
+
+    # Format the duration to two decimal places for better readability
+    formatted_duration = round(duration, 2)
+
+    for (min_duration, max_duration), (epochs, pretrain) in training_params.items():
+        if min_duration <= duration < max_duration:
+            return f"For an audio of {formatted_duration} minutes, use {epochs} epochs and {pretrain} pretrain."
+
+    if duration >= 60:
+        return "Datasets over 1 hour can result easily in overtraining; consider trimming down your dataset."
+
+    # Handle case where the audio duration is less than the minimum specified
+    return "The audio duration does not meet the minimum requirement for training."
 
 sr_dict = {
     "32k": 32000,
@@ -291,6 +324,8 @@ def if_done(done, p):
             break
     done[0] = True
 
+def on_button_click(audio_file_path):
+    return get_training_info(audio_file_path)
 
 def download_from_url(url, model):
     if url == '':
@@ -1438,6 +1473,13 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     with gr.Column():
                         sid1 = gr.Dropdown(label=i18n("Voice Model"), choices=sorted(names))
                         modelload_out = gr.Textbox(label="Model Metadata")
+                        get_model_info_button = gr.Button(i18n("Get Model Info"))
+                        get_model_info_button.click(
+                         fn=vc.get_vc, 
+                         inputs=[sid1, protect0, protect1],
+                         outputs=[spk_item, protect0, protect1, file_index2, file_index4, modelload_out]
+                        )
+                
                         
                 with gr.Accordion('Audio Analyser', open=False):
                     with gr.Column():
@@ -1445,6 +1487,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         get_info_button = gr.Button(
                             value=i18n("Get information about the audio"), variant="primary"
                         )
+				                				
                     with gr.Column():
                         with gr.Row():
                             with gr.Column():
@@ -1462,6 +1505,19 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         inputs=[audio_input],
                         outputs=[output_markdown, image_output],
                     )
+
+                with gr.Accordion('Training Helper', open=False):
+                    with gr.Column():
+                         audio_input = gr.Audio(type="filepath", label="Upload your audio file")
+                         gr.Text("Please note that these results are approximate and intended to provide a general idea for beginners.")
+                         training_info_output = gr.Textbox(label="Training Information")
+                         get_info_button = gr.Button("Get Training Info")
+                         get_info_button.click(
+                          fn=on_button_click,
+                          inputs=[audio_input],
+                          outputs=[training_info_output]
+            )
+
                 with gr.Accordion('Credits', open=False):
                     gr.Markdown('''
                 ## All the amazing people who worked on this!
@@ -1500,12 +1556,12 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     outputs=[spk_item, protect0, protect1, file_index2, file_index4, modelload_out],
                     api_name="infer_change_voice",
                 )      
-                sid1.change(
-                    fn=vc.get_vc,
-                    inputs=[sid1, protect0, protect1],
-                    outputs=[spk_item, protect0, protect1, file_index2, file_index4, modelload_out],
-                    api_name="infer_change_voice",
-                )                        
+ #               sid1.change(
+ #                   fn=vc.get_vc,
+ #                   inputs=[sid1, protect0, protect1],
+ #                   outputs=[spk_item, protect0, protect1, file_index2, file_index4, modelload_out],
+ #                   api_name="infer_change_voice",
+ #               )                        
         with gr.TabItem(i18n("")):
             gr.Markdown('''
                 ![ilaria](https://i.ytimg.com/vi/5PWqt2Wg-us/maxresdefault.jpg)
