@@ -24,6 +24,7 @@ rmvpe.pt
 
 # Additional
 *.pth
+*.log
 /assets
 /.idea
 /TEMP
