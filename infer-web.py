@@ -1376,17 +1376,24 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
             with gr.Row():
                 pretrained_G14 = gr.Dropdown(
                     label=i18n("Pretrained G"),
-                    choices=list(file_dict_g.values()),
+                    choices=list(file_dict_g.keys()),
                     value=file_dict_g['f0G32k.pth'],
                     interactive=True,
                 )
+                pretrained_G14_path = gr.State(value=file_dict_g['f0G32k.pth'])
 
                 pretrained_D15 = gr.Dropdown(
                     label=i18n("Pretrained D"),
-                    choices=list(file_dict_d.values()),
+                    choices=list(file_dict_d.keys()),
                     value=file_dict_d['f0D32k.pth'],
                     interactive=True,
                 )
+                pretrained_D15_path = gr.State(value=file_dict_d['f0D32k.pth'])
+
+                def update_pretrained_path(choice, state):
+                 return os.path.join("assets/pretrained_v2", choice)
+                pretrained_G14.change(update_pretrained_path, inputs=[pretrained_G14, pretrained_G14_path], outputs=pretrained_G14_path)
+                pretrained_D15.change(update_pretrained_path, inputs=[pretrained_D15, pretrained_D15_path], outputs=pretrained_D15_path)
                 sr2.change(
                     change_sr2,
                     [sr2, if_f0_3, version19],
@@ -1421,8 +1428,8 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         total_epoch11,
                         batch_size12,
                         if_save_latest13,
-                        pretrained_G14,
-                        pretrained_D15,
+                        pretrained_G14_path,
+                        pretrained_D15_path,
                         gpus16,
                         if_cache_gpu17,
                         if_save_every_weights18,
