@@ -276,6 +276,28 @@ def import_button_click(file):
 def clean():
     return {"value": "", "__type__": "update"}
 
+def get_training_info(audio_file):
+    duration = get_audio_duration(audio_file)
+
+    training_params = {
+        (0, 2): (150, 'Ov2'),
+        (2, 3): (200, 'Ov2'),
+        (3, 5): (250, 'Ov2'),
+        (5, 10): (300, 'Normal pretrain'),
+        (10, 25): (500, 'Normal pretrain'),
+        (25, 45): (700, 'Normal pretrain'),
+        (45, 60): (1000, 'Normal pretrain')
+    }
+
+    for (min_duration, max_duration), (epochs, pretrain) in training_params.items():
+        if min_duration <= duration < max_duration:
+            return f"For an audio of {duration} minutes, use {epochs} epochs and {pretrain} pretrain."
+
+    return "Datasets over 1 hour can result easily in over training, consider trimming down your dataset"
+
+def on_button_click():
+    get_training_info(audio_input.get())
+
 
 sr_dict = {
     "32k": 32000,
@@ -1404,7 +1426,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 )
                 gpus16 = gr.Textbox(
                     label=i18n("Enter cards to be used (Leave 0 if you have only one GPU, use 0-1 for multiple GPus)"),
-                    value=gpus,
+                    value=gpus if gpus != "" else "0",
                     interactive=True,
                 )
                 but3 = gr.Button(i18n("Train Model"), variant="primary")
@@ -1445,6 +1467,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         get_info_button = gr.Button(
                             value=i18n("Get information about the audio"), variant="primary"
                         )
+				                				
                     with gr.Column():
                         with gr.Row():
                             with gr.Column():
@@ -1462,6 +1485,13 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         inputs=[audio_input],
                         outputs=[output_markdown, image_output],
                     )
+
+                with gr.Accordion('Training Helper', open=False):
+                    with gr.Column():
+                        audio_input = gr.Audio(type="filepath", label="Upload your audio file", on_change=get_training_info)
+                        gr.Text("Please note that these results are approximate and intended to provide a general idea for beginners.")
+                        get_info_button.on_click(on_button_click)
+
                 with gr.Accordion('Credits', open=False):
                     gr.Markdown('''
                 ## All the amazing people who worked on this!
