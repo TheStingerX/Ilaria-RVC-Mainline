@@ -21,9 +21,16 @@ else
     echo "Python 3 not found. Attempting to install 3.8..."
     if [ "$(uname)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
       brew install python@3.8
-    elif [ "$(uname)" = "Linux" ] && command -v apt-get >/dev/null 2>&1; then
-      sudo apt-get update
-      sudo apt-get install python3.8
+    elif [ "$(uname)" = "Linux" ]; then
+      if command -v apt-get >/dev/null 2>&1; then
+        sudo apt-get update
+        sudo apt-get install python3.8
+      elif command -v pacman >/dev/null 2>&1; then
+        sudo pacman -Syu python38
+      else
+        echo "Please install Python 3.8 manually."
+        exit 1
+      fi
     else
       echo "Please install Python 3.8 manually."
       exit 1
