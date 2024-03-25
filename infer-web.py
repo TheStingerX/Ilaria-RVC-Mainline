@@ -1440,9 +1440,6 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         modelload_out = gr.Textbox(label="Model Metadata")
                 with gr.Accordion('Audio Analyser', open=True):
                     with gr.Column():
-                        gr.Markdown(
-                            "Tool inspired in the original [Ilaria-Audio-Analyzer](https://github.com/TheStingerX/Ilaria-Audio-Analyzer) code."
-                        )
                         audio_input = gr.Audio(type="filepath")
                         get_info_button = gr.Button(
                             value=i18n("Get information about the audio"), variant="primary"
