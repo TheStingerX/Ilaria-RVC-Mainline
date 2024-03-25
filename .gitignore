@@ -26,3 +26,6 @@ rmvpe.pt
 *.pth
 /assets
 /.idea
+/TEMP
+/configs/v1
+/configs/v2
