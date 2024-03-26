@@ -1,0 +1,1 @@
+python3 download_pretrain.py
