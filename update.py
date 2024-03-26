@@ -24,7 +24,8 @@ def get_file_sha(url):
         return None
 
 def update_file(file_info):
-    local_path = os.path.join(file_info['path'], file_info['name'])
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    local_path = os.path.join(script_dir, file_info['path'], file_info['name'])
     remote_sha = get_file_sha(file_info['download_url'])
 
     if remote_sha:
@@ -35,9 +36,10 @@ def update_file(file_info):
             if local_sha != remote_sha:
                 download_file(file_info['download_url'], local_path)
         else:
-            if not os.path.exists(file_info['path']):
-                os.makedirs(file_info['path'])
+            if not os.path.exists(os.path.dirname(local_path)):
+                os.makedirs(os.path.dirname(local_path))
             download_file(file_info['download_url'], local_path)
+
 
 def main():
     try:
