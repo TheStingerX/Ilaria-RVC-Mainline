@@ -5,7 +5,7 @@ import requests
 # fetch_pretrains returns an array with the names
 # download_pretrain downloads the pretrain with the name
 
-PRETRAINS_URL = "https://gist.githubusercontent.com/miqu-s/35042d5eaaebe311ecc2530040434192/raw/54fe5b54723bae3182479bc60d847b9dcb17270a/pretrains"
+PRETRAINS_URL = "https://gist.githubusercontent.com/miqu-s/35042d5eaaebe311ecc2530040434192/raw/687ea4c2158aa20a8ba52aa2d16f12578ec4197b/pretrains"
 
 def fetch_pretrains():
     try:
