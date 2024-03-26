@@ -43,7 +43,7 @@ def download_file(url, filename, current_file, total_files):
     try:
         response = requests.get(url, stream=True)
         if response.status_code == 200:
-            directory = "assets/pretrains_v2"
+            directory = "assets/pretrained_v2"
             if not os.path.exists(directory):
                 os.makedirs(directory)
             
