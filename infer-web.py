@@ -858,6 +858,7 @@ vc_output2 = gr.Audio(label=i18n("Audio output"))
 with gr.Blocks(title="Ilaria RVC 💖") as app:
     gr.Markdown("<h1>  Ilaria RVC 💖   </h1>")
     gr.Markdown(value=i18n("Made with 💖 by Ilaria | Support her on [Ko-Fi](https://ko-fi.com/ilariaowo)"))
+    gr.Markdown(i18n("For voice models and support join [AI Hub](https://discord.gg/AIHUB)"))
     with gr.Tabs():
         with gr.TabItem(i18n("Inference")):
             with gr.Row():
@@ -1110,6 +1111,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                             api_name="infer_convert",
                         )
             with gr.TabItem("Download Voice Models"):
+                gr.Markdown(i18n("For models found in [AI Hub](https://discord.gg/AIHUB)"))
                 with gr.Row():
                     url = gr.Textbox(label="Huggingface Link:")
                 with gr.Row():
@@ -1120,6 +1122,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 download_button.click(fn=download_from_url, inputs=[url, model], outputs=[status_bar])
 
             with gr.TabItem("Import Models"):
+             gr.Markdown(i18n("For models found on [Weights](https://weights.gg)"))
              file_upload = gr.File(label="Upload a .zip file containing a .pth and .index file")
              import_button = gr.Button("Import")
              import_status = gr.Textbox(label="Import Status")
