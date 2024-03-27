@@ -1,2 +1,3 @@
-runtime\python.exe infer-web.py --pycmd runtime\python.exe --port 7897
-pause
+@echo off
+echo Ilaria RVC is starting...
+start /B runtime\python.exe infer-web.py --pycmd runtime\python.exe --port 7897
