@@ -1254,12 +1254,6 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     value="32k",
                     interactive=True,
                 )
-                if_f0_3 = gr.Radio(
-                    label=i18n("Pitch Guidance"),
-                    choices=[True, False],
-                    value=True,
-                    interactive=True,
-                )
                 version19 = gr.Radio(
                     label=i18n("Version 2 only here"),
                     choices=["v2"],
@@ -1281,49 +1275,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     trainset_dir4 = gr.Textbox(
                         label=i18n("Path to Dataset"), value="dataset"
                     )
-                    spk_id5 = gr.Slider(
-                        minimum=0,
-                        maximum=4,
-                        step=1,
-                        label=i18n("Speaker ID"),
-                        value=0,
-                        interactive=True,
-                    )
-            with gr.Group():
-                gr.Markdown(value=i18n(""))
-                with gr.Row():
-                    with gr.Column():
-                        gpus6 = gr.Textbox(
-                            label=i18n("GPU ID (Leave 0 if you have only one GPU, use 0-1 for multiple GPus)"),
-                            value=gpus,
-                            interactive=True,
-                            visible=F0GPUVisible,
-                        )
-                        gpu_info9 = gr.Textbox(
-                            label=i18n("GPU Model"),
-                            value=gpu_info,
-                            visible=F0GPUVisible,
-                        )
-                    with gr.Column():
-                        f0method8 = gr.Radio(
-                            label=i18n("Feature Extraction Method"),
-                            choices=["rmvpe", "rmvpe_gpu"],
-                            value="rmvpe_gpu",
-                            interactive=True,
-                        )
-                        gpus_rmvpe = gr.Textbox(
-                            label=i18n(
-                                "rmvpe_gpu will use your GPU instead of the CPU for the feature extraction"
-                            ),
-                            value="%s-%s" % (gpus, gpus),
-                            interactive=True,
-                            visible=F0GPUVisible,
-                        )
-                    f0method8.change(
-                        fn=change_f0_method,
-                        inputs=[f0method8],
-                        outputs=[gpus_rmvpe],
-                    )
+
             with gr.Group():
                 gr.Markdown(value=i18n(""))
                 with gr.Row():
@@ -1351,6 +1303,45 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         value=default_batch_size,
                         interactive=True,
                     )
+                    if_save_every_weights18 = gr.Radio(
+                        label=i18n("Create model with save frequency"),
+                        choices=[i18n("是"), i18n("否")],
+                        value=i18n("是"),
+                        interactive=True,
+                    )
+
+            with gr.Accordion('Advanced Settings', open=False, visible=True):
+                with gr.Row():    
+                    spk_id5 = gr.Slider(
+                            minimum=0,
+                            maximum=4,
+                            step=1,
+                            label=i18n("Speaker ID"),
+                            value=0,
+                            interactive=True,
+                        )
+                    if_f0_3 = gr.Radio(
+                    label=i18n("Pitch Guidance"),
+                    choices=[True, False],
+                    value=True,
+                    interactive=True,
+                )
+                    gpus6 = gr.Textbox(
+                            label=i18n("GPU ID (Leave 0 if you have only one GPU, use 0-1 for multiple GPus)"),
+                            value=gpus,
+                            interactive=True,
+                            visible=F0GPUVisible,
+                        )
+                    gpu_info9 = gr.Textbox(
+                            label=i18n("GPU Model"),
+                            value=gpu_info,
+                            visible=F0GPUVisible,
+                        )
+                    gpus16 = gr.Textbox(
+                    label=i18n("Enter cards to be used (Leave 0 if you have only one GPU, use 0-1 for multiple GPus)"),
+                    value=gpus if gpus != "" else "0",
+                    interactive=True,
+                    )
                     if_save_latest13 = gr.Radio(
                         label=i18n("Save last ckpt as final Model"),
                         choices=[i18n("是"), i18n("否")],
@@ -1363,12 +1354,25 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         value=i18n("否"),
                         interactive=True,
                     )
-                    if_save_every_weights18 = gr.Radio(
-                        label=i18n("Create model with save frequency"),
-                        choices=[i18n("是"), i18n("否")],
-                        value=i18n("是"),
-                        interactive=True,
-                    )
+                    f0method8 = gr.Radio(
+                            label=i18n("Feature Extraction Method"),
+                            choices=["rmvpe", "rmvpe_gpu"],
+                            value="rmvpe_gpu",
+                            interactive=True,
+                        )
+                    gpus_rmvpe = gr.Textbox(
+                            label=i18n(
+                                "rmvpe_gpu will use your GPU instead of the CPU for the feature extraction"
+                            ),
+                            value="%s-%s" % (gpus, gpus),
+                            interactive=True,
+                            visible=F0GPUVisible,
+                        )
+                    f0method8.change(
+                        fn=change_f0_method,
+                        inputs=[f0method8],
+                        outputs=[gpus_rmvpe],
+                    )        
 
                 file_dict = {f: os.path.join("assets/pretrained_v2", f) for f in os.listdir("assets/pretrained_v2")}
                 file_dict = {k: v for k, v in file_dict.items() if k.endswith(".pth")}
@@ -1404,11 +1408,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     [if_f0_3, sr2, version19],
                     [f0method8, gpus_rmvpe, pretrained_G14, pretrained_D15],
                 )
-                gpus16 = gr.Textbox(
-                    label=i18n("Enter cards to be used (Leave 0 if you have only one GPU, use 0-1 for multiple GPus)"),
-                    value=gpus if gpus != "" else "0",
-                    interactive=True,
-                )
+            
             with gr.Group():
                 with gr.Row():
                  but1 = gr.Button(i18n("1. Process Data"), variant="primary")
