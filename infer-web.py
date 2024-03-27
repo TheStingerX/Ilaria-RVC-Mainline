@@ -874,14 +874,13 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 with gr.Column():
                     refresh_button = gr.Button(i18n("Refresh"), variant="primary")
                     clean_button = gr.Button(i18n("Unload Voice from VRAM"), variant="primary")
-                spk_item = gr.Slider(
-                    minimum=0,
-                    maximum=2333,
-                    step=1,
-                    label=i18n("Speaker ID (Auto-Detected)"),
-                    value=0,
-                    visible=True,
-                    interactive=False,
+                vc_transform0 = gr.inputs.Slider(
+                                label=i18n(
+                                    "Pitch: 0 from man to man (or woman to woman); 12 from man to woman and -12 from woman to man."),
+                                minimum=-12,
+                                maximum=12,
+                                default=0,
+                                step=1,
                 )
                 clean_button.click(
                     fn=clean, inputs=[], outputs=[sid0], api_name="infer_clean"
@@ -906,7 +905,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                                 )
                                 file_index1 = gr.Textbox(
                                     label=i18n("Path of index"),
-                                    placeholder="%userprofile%\\Desktop\\models\\model_example.index",
+                                    placeholder=".\models\index",
                                     interactive=True,
                                     visible=False,
                                 )
@@ -917,16 +916,6 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                                     visible=False,
                                 )
                         with gr.Column():
-                            
-                            vc_transform0 = gr.inputs.Slider(
-                                label=i18n(
-                                    "Pitch: 0 from man to man (or woman to woman); 12 from man to woman and -12 from woman to man."),
-                                minimum=-12,
-                                maximum=12,
-                                default=0,
-                                step=1,
-                            )
-                                    
                             with gr.Accordion('Advanced Settings', open=False, visible=False):
                                 with gr.Column():
                                     f0method0 = gr.Radio(
@@ -997,7 +986,16 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                                         choices=sorted(index_paths),
                                         interactive=True,
                                     )
-                                    
+                                    spk_item = gr.Slider(
+                                        minimum=0,
+                                        maximum=2333,
+                                        step=1,
+                                        label=i18n("Speaker ID (Auto-Detected)"),
+                                        value=0,
+                                        visible=True,
+                                        interactive=False,
+                                    )
+
                             with gr.Accordion('IlariaTTS', open=True):
                                 with gr.Column():
                                     ilariaid=gr.Dropdown(label="Voice:", choices=ilariavoices, interactive=True, value="English-Jenny (Female)")
@@ -1545,7 +1543,9 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 
                 ### Other
                 
-                - **yumereborn**: Ilaira RVC image
+                - **RVC Project**: Original Developers
+                - **yumereborn**: Ilaria RVC image
+                - **Mikus**: Ilaria Updater & Downloader
                                 
                 ### **In loving memory of JLabDX** 🕊️
                 ''')
@@ -1556,12 +1556,6 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     outputs=[spk_item, protect0, protect1, file_index2, file_index4, modelload_out],
                     api_name="infer_change_voice",
                 )      
- #               sid1.change(
- #                   fn=vc.get_vc,
- #                   inputs=[sid1, protect0, protect1],
- #                   outputs=[spk_item, protect0, protect1, file_index2, file_index4, modelload_out],
- #                   api_name="infer_change_voice",
- #               )                        
         with gr.TabItem(i18n("")):
             gr.Markdown('''
                 ![ilaria](https://i.ytimg.com/vi/5PWqt2Wg-us/maxresdefault.jpg)
