@@ -2,11 +2,27 @@ from tools import pretrain_helper
 
 pretrains = pretrain_helper.fetch_pretrains()
 
-for index, i in enumerate(pretrains):
-    print(index, i)
-    print('=' *50)
+# im eepy today, could be done better -- mikus
+def main():
+    ind = 0
+    for index, i in enumerate(pretrains):
+        print(index, i)
+        print('=' *50)
+        ind = index + 1
 
-print('Choose which pretrains you want (number):')
-pretrain_choice = input('> ')
+    print(ind, 'Download All')
 
-pretrain_helper.download_pretrain(pretrains[int(pretrain_choice)])
+    print('Choose which pretrains you want (number):')
+    pretrain_choice = input('> ')
+    if pretrain_choice == ind:
+        for i in pretrains:
+            pretrain_helper.download_pretrain(i)
+
+    elif pretrain_choice != ind:
+        pretrain_helper.download_pretrain(pretrains[int(pretrain_choice)])
+try:
+    main()
+except KeyboardInterrupt:
+    quit()
+except:
+    main()
