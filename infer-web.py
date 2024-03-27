@@ -110,7 +110,7 @@ if torch.cuda.is_available() or ngpu != 0:
             )
 if if_gpu_ok and len(gpu_infos) > 0:
     gpu_info = "\n".join(gpu_infos)
-    default_batch_size = min(mem) // 2
+    default_batch_size = ((min(mem) // 2 + 1) // 2) * 2
 else:
     gpu_info = i18n("Your GPU doesn't work for training")
     default_batch_size = 1
@@ -124,7 +124,6 @@ class ToolButton(gr.Button, gr.components.FormComponent):
 
     def get_block_name(self):
         return "button"
-
 
 weight_root = os.getenv("weight_root")
 index_root = os.getenv("index_root")
@@ -380,7 +379,6 @@ def download_from_url(url, model):
     except Exception as e:
         return f"ERROR - The test failed: {str(e)}"
 
-
 def if_done_multi(done, ps):
     while 1:
         flag = 1
@@ -560,7 +558,6 @@ def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvp
     logger.info(log)
     yield log
 
-
 def get_pretrained_models(path_str, f0_str, sr2):
     if_pretrained_generator_exist = os.access(
         "assets/pretrained%s/%sG%s.pth" % (path_str, f0_str, sr2), os.F_OK
@@ -620,7 +617,6 @@ def change_f0(if_f0_3, sr2, version19):
         {"visible": if_f0_3, "__type__": "update"},
         *get_pretrained_models(path_str, "f0" if if_f0_3 is True else "", sr2),
     )
-
 
 def click_train(
         exp_dir1,
@@ -772,7 +768,6 @@ def click_train(
     p.wait()
     return "You can view console or train.log"
 
-
 def train_index(exp_dir1, version19):
     exp_dir = "logs/%s" % exp_dir1
     os.makedirs(exp_dir, exist_ok=True)
@@ -848,9 +843,7 @@ def train_index(exp_dir1, version19):
     )
     yield "\n".join(infos)
 
-
 F0GPUVisible = config.dml is False
-
 
 def change_f0_method(f0method8):
     if f0method8 == "rmvpe_gpu":
