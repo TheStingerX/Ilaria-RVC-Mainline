@@ -65,7 +65,7 @@ Don’t worry if you’re not a tech whiz. Ilaria RVC is designed to be easy to 
 - **Poopmaster**: Model downloader, Model importer
 - **kitlemonfoot**: Ilaria TTS implementation
 - **eddycrack864**: UVR5 implementation
-- **Diablo**: Various fixes
+- **Diablo**: Various fixes, UI features
 
 ### Beta Tester
 
