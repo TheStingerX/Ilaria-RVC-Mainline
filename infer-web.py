@@ -29,6 +29,7 @@ import logging
 import matplotlib.pyplot as plt
 import soundfile as sf
 from dotenv import load_dotenv
+from tools import pretrain_helper
 
 import edge_tts, asyncio
 from infer.modules.vc.ilariatts import tts_order_voice
@@ -128,8 +129,41 @@ class ToolButton(gr.Button, gr.components.FormComponent):
 weight_root = os.getenv("weight_root")
 index_root = os.getenv("index_root")
 
-weight_root = "./models/pth"
-index_root = "./models/index"
+def get_pretrained_files(directory, keyword, filter_str):
+    file_paths = {}
+    for filename in os.listdir(directory):
+        if filename.endswith(".pth") and keyword in filename and filter_str in filename:
+            file_paths[filename] = os.path.join(directory, filename)
+    return file_paths
+
+pretrained_directory = "assets/pretrained_v2"
+pretrained_path = {filename: os.path.join(pretrained_directory, filename) for filename in os.listdir(pretrained_directory)}
+pretrained_G_files = get_pretrained_files(pretrained_directory, "G", "f0")
+pretrained_D_files = get_pretrained_files(pretrained_directory, "D", "f0")
+
+def get_pretrained_models(path_str, f0_str, sr2):
+    sr_mapping = {
+        "32k": f"{f0_str}G32k.pth",
+        "40k": f"{f0_str}G40k.pth",
+        "48k": f"{f0_str}G48k.pth",
+        "OV2-32k": "f0Ov2Super32kG.pth",
+        "OV2-40k": "f0Ov2Super40kG.pth",
+        "RIN-40k": "f0RIN_E3_G40k.pth",
+        "Snowie-40k": "G_Snowie_RuPretrain_EnP.pth",
+        "Snowie-48k": "G_Snowie_Rupretrain_48k_V1.2.pth2",
+        "SnowieV3.1-40k": "G_SnowieV3.1_40k.pth", 
+        "SnowieV3.1-32k": "G_SnowieV3.1_32k.pth",
+        "SnowieV3.1-48k": "G_SnowieV3.1_48k.pth",
+        "SnowieV3.1-RinE3-40K": "G_Snowie-X-Rin_40k.pth"
+    }
+
+    pretrained_G_filename = sr_mapping.get(sr2, "")
+    pretrained_D_filename = pretrained_G_filename.replace("G", "D")
+
+    if not pretrained_G_filename or not pretrained_D_filename:
+        logging.warning(f"Pretrained models not found for sample rate {sr2}, will not use pretrained models")
+
+    return os.path.join(pretrained_directory, pretrained_G_filename), os.path.join(pretrained_directory, pretrained_D_filename)
 
 names = []
 for name in os.listdir(weight_root):
@@ -310,9 +344,7 @@ def get_training_info(audio_file):
     return "The audio duration does not meet the minimum requirement for training."
 
 sr_dict = {
-    "32k": 32000,
-    "40k": 40000,
-    "48k": 48000,
+    "32k": 32000, "40k": 40000, "48k": 48000, "OV2-32k": 32000, "OV2-40k": 40000, "RIN-40k": 40000, "Snowie-40k": 40000, "Snowie-48k": 48000, "SnowieV3.1-40k": 40000, "SnowieV3.1-32k": 32000, "SnowieV3.1-48k": 48000, "SnowieV3.1-RinE3-40K": 40000,
 }
 
 def if_done(done, p):
@@ -558,35 +590,7 @@ def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvp
     logger.info(log)
     yield log
 
-def get_pretrained_models(path_str, f0_str, sr2):
-    if_pretrained_generator_exist = os.access(
-        "assets/pretrained%s/%sG%s.pth" % (path_str, f0_str, sr2), os.F_OK
-    )
-    if_pretrained_discriminator_exist = os.access(
-        "assets/pretrained%s/%sD%s.pth" % (path_str, f0_str, sr2), os.F_OK
-    )
-    if not if_pretrained_generator_exist:
-        logger.warning(
-            "assets/pretrained%s/%sG%s.pth not exist, will not use pretrained model",
-            path_str,
-            f0_str,
-            sr2,
-        )
-    if not if_pretrained_discriminator_exist:
-        logger.warning(
-            "assets/pretrained%s/%sD%s.pth not exist, will not use pretrained model",
-            path_str,
-            f0_str,
-            sr2,
-        )
-    return (
-        "assets/pretrained%s/%sG%s.pth" % (path_str, f0_str, sr2)
-        if if_pretrained_generator_exist
-        else "",
-        "assets/pretrained%s/%sD%s.pth" % (path_str, f0_str, sr2)
-        if if_pretrained_discriminator_exist
-        else "",
-    )
+
 
 def change_sr2(sr2, if_f0_3, version19):
     path_str = "" if version19 == "v1" else "_v2"
@@ -599,16 +603,15 @@ def change_version19(sr2, if_f0_3, version19):
     if sr2 == "32k" and version19 == "v1":
         sr2 = "40k"
     to_return_sr2 = (
-        {"choices": ["40k", "48k"], "__type__": "update", "value": sr2}
+        {"choices": ["32k","40k", "48k"], "__type__": "update", "value": sr2}
         if version19 == "v1"
-        else {"choices": ["32k", "40k", "48k"], "__type__": "update", "value": sr2}
+        else {"choices": ["32k", "40k", "48k", "OV2-32k", "OV2-40k", "RIN-40k","Snowie-40k","Snowie-48k"], "__type__": "update", "value": sr2}
     )
     f0_str = "f0" if if_f0_3 else ""
     return (
         *get_pretrained_models(path_str, f0_str, sr2),
         to_return_sr2,
     )
-
 
 def change_f0(if_f0_3, sr2, version19):
     path_str = "" if version19 == "v1" else "_v2"
@@ -1253,7 +1256,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 exp_dir1 = gr.Textbox(label=i18n("Model Name"), value="test-model")
                 sr2 = gr.Radio(
                     label=i18n("Sample Rate"),
-                    choices=["32k", "40k", "48k"],
+                    choices=["32k", "40k", "48k", "OV2-32k", "OV2-40k", "RIN-40k", "Snowie-40k", "Snowie-48k", "SnowieV3.1-40k","SnowieV3.1-32k","SnowieV3.1-48k","SnowieV3.1-RinE3-40K"],
                     value="32k",
                     interactive=True,
                 )
@@ -1377,23 +1380,17 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         outputs=[gpus_rmvpe],
                     )        
 
-                file_dict = {f: os.path.join("assets/pretrained_v2", f) for f in os.listdir("assets/pretrained_v2")}
-                file_dict = {k: v for k, v in file_dict.items() if k.endswith(".pth")}
-                file_dict_g = {k: v for k, v in file_dict.items() if "G" in k and "f0" in k}
-                file_dict_d = {k: v for k, v in file_dict.items() if "D" in k and "f0" in k}
-
             with gr.Row():
-                pretrained_G14 = gr.Dropdown(
-                    label=i18n("Pretrained G"),
-                    choices=list(file_dict_g.values()),
-                    value=file_dict_g['f0G32k.pth'],
+                pretrained_G14 = gr.Textbox(
+                    label="Pretrained G",
+                    choices=list(pretrained_G_files.values()),
+                    value=pretrained_G_files.get('f0G32.pth', ''), 
                     interactive=True,
                 )
-
-                pretrained_D15 = gr.Dropdown(
-                    label=i18n("Pretrained D"),
-                    choices=list(file_dict_d.values()),
-                    value=file_dict_d['f0D32k.pth'],
+                pretrained_D15 = gr.Textbox(
+                    label="Pretrained D",
+                    choices=list(pretrained_D_files.values()),
+                    value=pretrained_D_files.get('f0D32.pth', ''), 
                     interactive=True,
                 )
                 sr2.change(
