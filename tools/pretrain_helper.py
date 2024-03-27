@@ -5,7 +5,7 @@ import requests
 # fetch_pretrains returns an array with the names
 # download_pretrain downloads the pretrain with the name
 
-PRETRAINS_URL = "https://gist.githubusercontent.com/miqu-s/35042d5eaaebe311ecc2530040434192/raw/466eb363302df3cd44a53bc4b1440806b0dda375/pretrains"
+PRETRAINS_URL = "https://raw.githubusercontent.com/TheStingerX/Ilaria-RVC-Mainline/main/tools/pretrains.json"
 
 def fetch_pretrains():
     try:
@@ -63,3 +63,21 @@ def download_file(url, filename, current_file, total_files):
             print(f"Failed to download {filename}. Status code:", response.status_code)
     except Exception as e:
         print(f"An error occurred while downloading {filename}:", e)
+
+def get_pretrained_models(f0_str):
+    try:
+        response = requests.get(PRETRAINS_URL)
+        if response.status_code == 200:
+            pretrains_data = json.loads(response.text)
+            nahidwin = {"32k": f"{f0_str}G32k.pth", "40k": f"{f0_str}G40k.pth", "48k": f"{f0_str}G48k.pth",}
+            for i in list(pretrains_data.keys()):
+                ihatemyselfyuh = pretrains_data[i]['G']
+                nahidwin[i] = ihatemyselfyuh.split('/')[-1]
+            return nahidwin
+    except:
+        # fallback lol
+        return {
+            "32k": f"{f0_str}G32k.pth",
+            "40k": f"{f0_str}G40k.pth",
+            "48k": f"{f0_str}G48k.pth"
+        }
