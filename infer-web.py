@@ -1514,32 +1514,35 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     gr.Markdown('''
                 ## All the amazing people who worked on this!
                 
-                ### Developers
-                
-                - **Ilaria**: Founder, Lead Developer
-                - **Yui**: Training feature
-                - **GDR-**: Inference feature
-                - **Poopmaster**: Model downloader, Model importer
-                - **kitlemonfoot**: Ilaria TTS implementation
-                - **eddycrack864**: UVR5 implementation
-                
-                ### Beta Tester
-                
-                - **Charlotte**: Beta Tester
-                - **RME**: Beta Tester
-                - **Delik**: Beta Tester
-                
-                ### Pretrains Makers
-
-                - **simplcup**: Ov2Super
-                - **mustar22**: RIN_E3
-                - **mustar22**: Snowie
-                
-                ### Other
-                
-                - **RVC Project**: Original Developers
-                - **yumereborn**: Ilaria RVC image
-                - **Mikus**: Ilaria Updater & Downloader
+		### Developers
+		
+		- **Ilaria**: Founder, Lead Developer
+		- **Yui**: Training feature
+		- **GDR-**: Inference feature
+		- **Poopmaster**: Model downloader, Model importer
+		- **kitlemonfoot**: Ilaria TTS implementation
+		- **eddycrack864**: UVR5 implementation
+		- **Diablo**: Various fixes, UI features
+		
+		### Beta Tester
+		
+		- **Charlotte**: Beta Tester, Advisor
+		- **mrm0dz**: Beta Tester, Advisor
+		- **RME**: Beta Tester
+		- **Delik**: Beta Tester
+		- - **inductivegrub**: BEta Tester
+		
+		### Pretrains Makers
+		
+		- **simplcup**: Ov2Super
+		- **mustar22**: RIN_E3
+		- **mustar22**: Snowie
+		
+		### Other
+		
+		- **RVC Project**: Original Developers
+		- **yumereborn**: Ilaria RVC image
+		- **Mikus**: Ilaria Updater & Downloader
                                 
                 ### **In loving memory of JLabDX** 🕊️
                 ''')
