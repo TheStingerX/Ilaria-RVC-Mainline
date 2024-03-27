@@ -1,37 +1,37 @@
 {
-  "Ov2 Super 32k": {
+  "OV2-32k": {
     "D": "https://huggingface.co/poiqazwsx/Ov2Super32kfix/resolve/main/f0Ov2Super32kD.pth",
     "G": "https://huggingface.co/poiqazwsx/Ov2Super32kfix/resolve/main/f0Ov2Super32kG.pth"
   },
-  "Ov2 Super 40k": {
+  "OV2-40k": {
     "D": "https://huggingface.co/ORVC/Ov2Super/resolve/main/f0Ov2Super40kD.pth",
     "G": "https://huggingface.co/ORVC/Ov2Super/resolve/main/f0Ov2Super40kG.pth"
   },
-  "RIN_E3": {
+  "RIN-40k": {
     "D": "https://huggingface.co/ORVC/RIN_E3/resolve/main/RIN_E3_D.pth",
     "G": "https://huggingface.co/ORVC/RIN_E3/resolve/main/RIN_E3_G.pth"
   },
-  "Snowie 40k": {
+  "Snowie-40k": {
     "D": "https://huggingface.co/ORVC/Snowie_RuPretrain_40k/resolve/main/D_Snowie_RuPretrain_EnP.pth",
     "G": "https://huggingface.co/ORVC/Snowie_RuPretrain_40k/resolve/main/G_Snowie_RuPretrain_EnP.pth"
   },
-  "Snowie 48k": {
+  "Snowie-48k": {
     "D": "https://huggingface.co/ORVC/Snowie_RuPretrain_48k/resolve/main/D_Snowie_Rupretrain_48k_V1.2.pth",
     "G": "https://huggingface.co/ORVC/Snowie_RuPretrain_48k/resolve/main/G_Snowie_Rupretrain_48k_V1.2.pth"
   },
-  "SnowieV3.1 40k": {
+  "SnowieV3.1-40k": {
     "D": "https://huggingface.co/MUSTAR/SnowieV3.1-40k/resolve/main/D_SnowieV3.1_40k.pth",
     "G": "https://huggingface.co/MUSTAR/SnowieV3.1-40k/resolve/main/G_SnowieV3.1_40k.pth"
   },
-  "SnowieV3.1 32k": {
+  "SnowieV3.1-32k": {
     "D": "https://huggingface.co/MUSTAR/SnowieV3.1-32k/resolve/main/D_SnowieV3.1_32k.pth",
     "G": "https://huggingface.co/MUSTAR/SnowieV3.1-32k/resolve/main/G_SnowieV3.1_32k.pth"
   },
-  "SnowieV3.1 48k": {
+  "SnowieV3.1-48k": {
     "D": "https://huggingface.co/MUSTAR/SnowieV3.1-48k/resolve/main/D_SnowieV3.1_48k.pth",
     "G": "https://huggingface.co/MUSTAR/SnowieV3.1-48k/resolve/main/G_SnowieV3.1_48k.pth"
   },
-  "SnowieV3.1 X RinE3 40K": {
+  "SnowieV3.1-X-RinE3 40K": {
     "D": "https://huggingface.co/MUSTAR/SnowieV3.1-X-RinE3-40K/resolve/main/D_Snowie-X-Rin_40k.pth",
     "G": "https://huggingface.co/MUSTAR/SnowieV3.1-X-RinE3-40K/resolve/main/G_Snowie-X-Rin_40k.pth"
   }
