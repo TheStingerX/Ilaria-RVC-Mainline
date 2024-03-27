@@ -29,6 +29,7 @@ import logging
 import matplotlib.pyplot as plt
 import soundfile as sf
 from dotenv import load_dotenv
+from tools import pretrain_helper
 
 import edge_tts, asyncio
 from infer.modules.vc.ilariatts import tts_order_voice
@@ -110,7 +111,7 @@ if torch.cuda.is_available() or ngpu != 0:
             )
 if if_gpu_ok and len(gpu_infos) > 0:
     gpu_info = "\n".join(gpu_infos)
-    default_batch_size = min(mem) // 2
+    default_batch_size = ((min(mem) // 2 + 1) // 2) * 2
 else:
     gpu_info = i18n("Your GPU doesn't work for training")
     default_batch_size = 1
@@ -125,12 +126,44 @@ class ToolButton(gr.Button, gr.components.FormComponent):
     def get_block_name(self):
         return "button"
 
-
 weight_root = os.getenv("weight_root")
 index_root = os.getenv("index_root")
 
-weight_root = "./models/pth"
-index_root = "./models/index"
+def get_pretrained_files(directory, keyword, filter_str):
+    file_paths = {}
+    for filename in os.listdir(directory):
+        if filename.endswith(".pth") and keyword in filename and filter_str in filename:
+            file_paths[filename] = os.path.join(directory, filename)
+    return file_paths
+
+pretrained_directory = "assets/pretrained_v2"
+pretrained_path = {filename: os.path.join(pretrained_directory, filename) for filename in os.listdir(pretrained_directory)}
+pretrained_G_files = get_pretrained_files(pretrained_directory, "G", "f0")
+pretrained_D_files = get_pretrained_files(pretrained_directory, "D", "f0")
+
+def get_pretrained_models(path_str, f0_str, sr2):
+    sr_mapping = {
+        "32k": f"{f0_str}G32k.pth",
+        "40k": f"{f0_str}G40k.pth",
+        "48k": f"{f0_str}G48k.pth",
+        "OV2-32k": "f0Ov2Super32kG.pth",
+        "OV2-40k": "f0Ov2Super40kG.pth",
+        "RIN-40k": "f0RIN_E3_G40k.pth",
+        "Snowie-40k": "G_Snowie_RuPretrain_EnP.pth",
+        "Snowie-48k": "G_Snowie_Rupretrain_48k_V1.2.pth2",
+        "SnowieV3.1-40k": "G_SnowieV3.1_40k.pth", 
+        "SnowieV3.1-32k": "G_SnowieV3.1_32k.pth",
+        "SnowieV3.1-48k": "G_SnowieV3.1_48k.pth",
+        "SnowieV3.1-RinE3-40K": "G_Snowie-X-Rin_40k.pth"
+    }
+
+    pretrained_G_filename = sr_mapping.get(sr2, "")
+    pretrained_D_filename = pretrained_G_filename.replace("G", "D")
+
+    if not pretrained_G_filename or not pretrained_D_filename:
+        logging.warning(f"Pretrained models not found for sample rate {sr2}, will not use pretrained models")
+
+    return os.path.join(pretrained_directory, pretrained_G_filename), os.path.join(pretrained_directory, pretrained_D_filename)
 
 names = []
 for name in os.listdir(weight_root):
@@ -311,9 +344,7 @@ def get_training_info(audio_file):
     return "The audio duration does not meet the minimum requirement for training."
 
 sr_dict = {
-    "32k": 32000,
-    "40k": 40000,
-    "48k": 48000,
+    "32k": 32000, "40k": 40000, "48k": 48000, "OV2-32k": 32000, "OV2-40k": 40000, "RIN-40k": 40000, "Snowie-40k": 40000, "Snowie-48k": 48000, "SnowieV3.1-40k": 40000, "SnowieV3.1-32k": 32000, "SnowieV3.1-48k": 48000, "SnowieV3.1-RinE3-40K": 40000,
 }
 
 def if_done(done, p):
@@ -379,7 +410,6 @@ def download_from_url(url, model):
         return f"ERROR - Download failed (requests): {str(e)}"
     except Exception as e:
         return f"ERROR - The test failed: {str(e)}"
-
 
 def if_done_multi(done, ps):
     while 1:
@@ -561,35 +591,6 @@ def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvp
     yield log
 
 
-def get_pretrained_models(path_str, f0_str, sr2):
-    if_pretrained_generator_exist = os.access(
-        "assets/pretrained%s/%sG%s.pth" % (path_str, f0_str, sr2), os.F_OK
-    )
-    if_pretrained_discriminator_exist = os.access(
-        "assets/pretrained%s/%sD%s.pth" % (path_str, f0_str, sr2), os.F_OK
-    )
-    if not if_pretrained_generator_exist:
-        logger.warning(
-            "assets/pretrained%s/%sG%s.pth not exist, will not use pretrained model",
-            path_str,
-            f0_str,
-            sr2,
-        )
-    if not if_pretrained_discriminator_exist:
-        logger.warning(
-            "assets/pretrained%s/%sD%s.pth not exist, will not use pretrained model",
-            path_str,
-            f0_str,
-            sr2,
-        )
-    return (
-        "assets/pretrained%s/%sG%s.pth" % (path_str, f0_str, sr2)
-        if if_pretrained_generator_exist
-        else "",
-        "assets/pretrained%s/%sD%s.pth" % (path_str, f0_str, sr2)
-        if if_pretrained_discriminator_exist
-        else "",
-    )
 
 def change_sr2(sr2, if_f0_3, version19):
     path_str = "" if version19 == "v1" else "_v2"
@@ -602,16 +603,15 @@ def change_version19(sr2, if_f0_3, version19):
     if sr2 == "32k" and version19 == "v1":
         sr2 = "40k"
     to_return_sr2 = (
-        {"choices": ["40k", "48k"], "__type__": "update", "value": sr2}
+        {"choices": ["32k","40k", "48k"], "__type__": "update", "value": sr2}
         if version19 == "v1"
-        else {"choices": ["32k", "40k", "48k"], "__type__": "update", "value": sr2}
+        else {"choices": ["32k", "40k", "48k", "OV2-32k", "OV2-40k", "RIN-40k","Snowie-40k","Snowie-48k"], "__type__": "update", "value": sr2}
     )
     f0_str = "f0" if if_f0_3 else ""
     return (
         *get_pretrained_models(path_str, f0_str, sr2),
         to_return_sr2,
     )
-
 
 def change_f0(if_f0_3, sr2, version19):
     path_str = "" if version19 == "v1" else "_v2"
@@ -620,7 +620,6 @@ def change_f0(if_f0_3, sr2, version19):
         {"visible": if_f0_3, "__type__": "update"},
         *get_pretrained_models(path_str, "f0" if if_f0_3 is True else "", sr2),
     )
-
 
 def click_train(
         exp_dir1,
@@ -772,7 +771,6 @@ def click_train(
     p.wait()
     return "You can view console or train.log"
 
-
 def train_index(exp_dir1, version19):
     exp_dir = "logs/%s" % exp_dir1
     os.makedirs(exp_dir, exist_ok=True)
@@ -848,9 +846,7 @@ def train_index(exp_dir1, version19):
     )
     yield "\n".join(infos)
 
-
 F0GPUVisible = config.dml is False
-
 
 def change_f0_method(f0method8):
     if f0method8 == "rmvpe_gpu":
@@ -865,6 +861,7 @@ vc_output2 = gr.Audio(label=i18n("Audio output"))
 with gr.Blocks(title="Ilaria RVC 💖") as app:
     gr.Markdown("<h1>  Ilaria RVC 💖   </h1>")
     gr.Markdown(value=i18n("Made with 💖 by Ilaria | Support her on [Ko-Fi](https://ko-fi.com/ilariaowo)"))
+    gr.Markdown(i18n("For voice models and support join [AI Hub](https://discord.gg/AIHUB)"))
     with gr.Tabs():
         with gr.TabItem(i18n("Inference")):
             with gr.Row():
@@ -874,14 +871,13 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 with gr.Column():
                     refresh_button = gr.Button(i18n("Refresh"), variant="primary")
                     clean_button = gr.Button(i18n("Unload Voice from VRAM"), variant="primary")
-                spk_item = gr.Slider(
-                    minimum=0,
-                    maximum=2333,
-                    step=1,
-                    label=i18n("Speaker ID (Auto-Detected)"),
-                    value=0,
-                    visible=True,
-                    interactive=False,
+                vc_transform0 = gr.inputs.Slider(
+                                label=i18n(
+                                    "Pitch: 0 from man to man (or woman to woman); 12 from man to woman and -12 from woman to man."),
+                                minimum=-12,
+                                maximum=12,
+                                default=0,
+                                step=1,
                 )
                 clean_button.click(
                     fn=clean, inputs=[], outputs=[sid0], api_name="infer_clean"
@@ -906,7 +902,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                                 )
                                 file_index1 = gr.Textbox(
                                     label=i18n("Path of index"),
-                                    placeholder="%userprofile%\\Desktop\\models\\model_example.index",
+                                    placeholder=".\models\index",
                                     interactive=True,
                                     visible=False,
                                 )
@@ -917,16 +913,6 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                                     visible=False,
                                 )
                         with gr.Column():
-                            
-                            vc_transform0 = gr.inputs.Slider(
-                                label=i18n(
-                                    "Pitch: 0 from man to man (or woman to woman); 12 from man to woman and -12 from woman to man."),
-                                minimum=-12,
-                                maximum=12,
-                                default=0,
-                                step=1,
-                            )
-                                    
                             with gr.Accordion('Advanced Settings', open=False, visible=False):
                                 with gr.Column():
                                     f0method0 = gr.Radio(
@@ -997,7 +983,16 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                                         choices=sorted(index_paths),
                                         interactive=True,
                                     )
-                                    
+                                    spk_item = gr.Slider(
+                                        minimum=0,
+                                        maximum=2333,
+                                        step=1,
+                                        label=i18n("Speaker ID (Auto-Detected)"),
+                                        value=0,
+                                        visible=True,
+                                        interactive=False,
+                                    )
+
                             with gr.Accordion('IlariaTTS', open=True):
                                 with gr.Column():
                                     ilariaid=gr.Dropdown(label="Voice:", choices=ilariavoices, interactive=True, value="English-Jenny (Female)")
@@ -1119,6 +1114,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                             api_name="infer_convert",
                         )
             with gr.TabItem("Download Voice Models"):
+                gr.Markdown(i18n("For models found in [AI Hub](https://discord.gg/AIHUB)"))
                 with gr.Row():
                     url = gr.Textbox(label="Huggingface Link:")
                 with gr.Row():
@@ -1129,6 +1125,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 download_button.click(fn=download_from_url, inputs=[url, model], outputs=[status_bar])
 
             with gr.TabItem("Import Models"):
+             gr.Markdown(i18n("For models found on [Weights](https://weights.gg)"))
              file_upload = gr.File(label="Upload a .zip file containing a .pth and .index file")
              import_button = gr.Button("Import")
              import_status = gr.Textbox(label="Import Status")
@@ -1257,16 +1254,10 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
             gr.Markdown(value=i18n(""))
             with gr.Row():
                 exp_dir1 = gr.Textbox(label=i18n("Model Name"), value="test-model")
-                sr2 = gr.Radio(
-                    label=i18n("Sample Rate"),
-                    choices=["32k", "40k", "48k"],
+                sr2 = gr.Dropdown(
+                    label=i18n("Sample Rate & Pretrain"),
+                    choices=["32k", "40k", "48k", "OV2-32k", "OV2-40k", "RIN-40k", "Snowie-40k", "Snowie-48k", "SnowieV3.1-40k","SnowieV3.1-32k","SnowieV3.1-48k","SnowieV3.1-RinE3-40K"],
                     value="32k",
-                    interactive=True,
-                )
-                if_f0_3 = gr.Radio(
-                    label=i18n("Pitch Guidance"),
-                    choices=[True, False],
-                    value=True,
                     interactive=True,
                 )
                 version19 = gr.Radio(
@@ -1290,73 +1281,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     trainset_dir4 = gr.Textbox(
                         label=i18n("Path to Dataset"), value="dataset"
                     )
-                    spk_id5 = gr.Slider(
-                        minimum=0,
-                        maximum=4,
-                        step=1,
-                        label=i18n("Speaker ID"),
-                        value=0,
-                        interactive=True,
-                    )
-                    but1 = gr.Button(i18n("Process Data"), variant="primary")
-                    info1 = gr.Textbox(label=i18n("Output"), value="")
-                    but1.click(
-                        preprocess_dataset,
-                        [trainset_dir4, exp_dir1, sr2, np7],
-                        [info1],
-                        api_name="train_preprocess",
-                    )
-            with gr.Group():
-                gr.Markdown(value=i18n(""))
-                with gr.Row():
-                    with gr.Column():
-                        gpus6 = gr.Textbox(
-                            label=i18n("GPU ID (Leave 0 if you have only one GPU, use 0-1 for multiple GPus)"),
-                            value=gpus,
-                            interactive=True,
-                            visible=F0GPUVisible,
-                        )
-                        gpu_info9 = gr.Textbox(
-                            label=i18n("GPU Model"),
-                            value=gpu_info,
-                            visible=F0GPUVisible,
-                        )
-                    with gr.Column():
-                        f0method8 = gr.Radio(
-                            label=i18n("Feature Extraction Method"),
-                            choices=["rmvpe", "rmvpe_gpu"],
-                            value="rmvpe_gpu",
-                            interactive=True,
-                        )
-                        gpus_rmvpe = gr.Textbox(
-                            label=i18n(
-                                "rmvpe_gpu will use your GPU instead of the CPU for the feature extraction"
-                            ),
-                            value="%s-%s" % (gpus, gpus),
-                            interactive=True,
-                            visible=F0GPUVisible,
-                        )
-                    but2 = gr.Button(i18n("Feature Extraction"), variant="primary")
-                    info2 = gr.Textbox(label=i18n("Output"), value="", max_lines=8)
-                    f0method8.change(
-                        fn=change_f0_method,
-                        inputs=[f0method8],
-                        outputs=[gpus_rmvpe],
-                    )
-                    but2.click(
-                        extract_f0_feature,
-                        [
-                            gpus6,
-                            np7,
-                            f0method8,
-                            if_f0_3,
-                            exp_dir1,
-                            version19,
-                            gpus_rmvpe,
-                        ],
-                        [info2],
-                        api_name="train_extract_f0_feature",
-                    )
+
             with gr.Group():
                 gr.Markdown(value=i18n(""))
                 with gr.Row():
@@ -1384,18 +1309,6 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         value=default_batch_size,
                         interactive=True,
                     )
-                    if_save_latest13 = gr.Radio(
-                        label=i18n("Save last ckpt as final Model"),
-                        choices=[i18n("是"), i18n("否")],
-                        value=i18n("是"),
-                        interactive=True,
-                    )
-                    if_cache_gpu17 = gr.Radio(
-                        label=i18n("Cache data to GPU (Only for datasets under 8 minutes)"),
-                        choices=[i18n("是"), i18n("否")],
-                        value=i18n("否"),
-                        interactive=True,
-                    )
                     if_save_every_weights18 = gr.Radio(
                         label=i18n("Create model with save frequency"),
                         choices=[i18n("是"), i18n("否")],
@@ -1403,23 +1316,85 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         interactive=True,
                     )
 
-                file_dict = {f: os.path.join("assets/pretrained_v2", f) for f in os.listdir("assets/pretrained_v2")}
-                file_dict = {k: v for k, v in file_dict.items() if k.endswith(".pth")}
-                file_dict_g = {k: v for k, v in file_dict.items() if "G" in k and "f0" in k}
-                file_dict_d = {k: v for k, v in file_dict.items() if "D" in k and "f0" in k}
+            with gr.Accordion('Advanced Settings', open=False, visible=True):
+                with gr.Row(): 
+                    with gr.Group():
+                        spk_id5 = gr.Slider(
+                                minimum=0,
+                                maximum=4,
+                                step=1,
+                                label=i18n("Speaker ID"),
+                                value=0,
+                                interactive=True,
+                            )
+                        if_f0_3 = gr.Radio(
+                        label=i18n("Pitch Guidance"),
+                        choices=[True, False],
+                        value=True,
+                        interactive=True,
+                    )
+                        gpus6 = gr.Textbox(
+                                label=i18n("GPU ID (Leave 0 if you have only one GPU, use 0-1 for multiple GPus)"),
+                                value=gpus,
+                                interactive=True,
+                                visible=F0GPUVisible,
+                            )
+                        gpu_info9 = gr.Textbox(
+                                label=i18n("GPU Model"),
+                                value=gpu_info,
+                                visible=F0GPUVisible,
+                            )
+                        gpus16 = gr.Textbox(
+                        label=i18n("Enter cards to be used (Leave 0 if you have only one GPU, use 0-1 for multiple GPus)"),
+                        value=gpus if gpus != "" else "0",
+                        interactive=True,
+                        )
+                        with gr.Group():
+                            if_save_latest13 = gr.Radio(
+                                label=i18n("Save last ckpt as final Model"),
+                                choices=[i18n("是"), i18n("否")],
+                                value=i18n("是"),
+                                interactive=True,
+                            )
+                            if_cache_gpu17 = gr.Radio(
+                                label=i18n("Cache data to GPU (Only for datasets under 8 minutes)"),
+                                choices=[i18n("是"), i18n("否")],
+                                value=i18n("否"),
+                                interactive=True,
+                            )
+                            f0method8 = gr.Radio(
+                                    label=i18n("Feature Extraction Method"),
+                                    choices=["rmvpe", "rmvpe_gpu"],
+                                    value="rmvpe_gpu",
+                                    interactive=True,
+                                )
+                            gpus_rmvpe = gr.Textbox(
+                                    label=i18n(
+                                        "rmvpe_gpu will use your GPU instead of the CPU for the feature extraction"
+                                    ),
+                                    value="%s-%s" % (gpus, gpus),
+                                    interactive=True,
+                                    visible=F0GPUVisible,
+                                )
+                            f0method8.change(
+                                fn=change_f0_method,
+                                inputs=[f0method8],
+                                outputs=[gpus_rmvpe],
+                            )        
 
             with gr.Row():
-                pretrained_G14 = gr.Dropdown(
-                    label=i18n("Pretrained G"),
-                    choices=list(file_dict_g.values()),
-                    value=file_dict_g['f0G32k.pth'],
+                pretrained_G14 = gr.Textbox(
+                    label="Pretrained G",
+                    choices=list(pretrained_G_files.values()),
+                    value=pretrained_G_files.get('f0G32.pth', ''),
+                    visible=False,
                     interactive=True,
                 )
-
-                pretrained_D15 = gr.Dropdown(
-                    label=i18n("Pretrained D"),
-                    choices=list(file_dict_d.values()),
-                    value=file_dict_d['f0D32k.pth'],
+                pretrained_D15 = gr.Textbox(
+                    label="Pretrained D",
+                    choices=list(pretrained_D_files.values()),
+                    value=pretrained_D_files.get('f0D32.pth', ''),
+                    visible=False,
                     interactive=True,
                 )
                 sr2.change(
@@ -1437,15 +1412,36 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     [if_f0_3, sr2, version19],
                     [f0method8, gpus_rmvpe, pretrained_G14, pretrained_D15],
                 )
-                gpus16 = gr.Textbox(
-                    label=i18n("Enter cards to be used (Leave 0 if you have only one GPU, use 0-1 for multiple GPus)"),
-                    value=gpus if gpus != "" else "0",
-                    interactive=True,
-                )
-                but3 = gr.Button(i18n("Train Model"), variant="primary")
-                but4 = gr.Button(i18n("Train Index"), variant="primary")
-                info3 = gr.Textbox(label=i18n("Output"), value="", max_lines=10)
-                but3.click(
+            
+            with gr.Group():
+                with gr.Row():
+                 but1 = gr.Button(i18n("1. Process Data"), variant="primary")
+                 but2 = gr.Button(i18n("2. Feature Extraction"), variant="primary")
+                 but4 = gr.Button(i18n("3. Train Index"), variant="primary")
+                 but3 = gr.Button(i18n("4. Train Model"), variant="primary")
+                 info = gr.Textbox(label=i18n("Output"), value="", max_lines=10)
+                 but1.click(
+                    preprocess_dataset,
+                        [trainset_dir4, exp_dir1, sr2, np7],
+                        [info],
+                        api_name="train_preprocess",
+                     )
+                 but2.click(
+                    extract_f0_feature,
+                        [
+                            gpus6,
+                            np7,
+                            f0method8,
+                            if_f0_3,
+                            exp_dir1,
+                            version19,
+                            gpus_rmvpe,
+                        ],
+                        [info],
+                        api_name="train_extract_f0_feature",
+                 )
+                 but4.click(train_index, [exp_dir1, version19], info)
+                 but3.click(
                     click_train,
                     [
                         exp_dir1,
@@ -1463,10 +1459,10 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         if_save_every_weights18,
                         version19,
                     ],
-                    info3,
+                    info,
                     api_name="train_start",
-                )
-                but4.click(train_index, [exp_dir1, version19], info3)
+                 )
+                 but4.click(train_index, [exp_dir1, version19], info)
         
         with gr.TabItem(i18n("Extra")):
                 with gr.Accordion('Model Info', open=False):
@@ -1545,7 +1541,9 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 
                 ### Other
                 
-                - **yumereborn**: Ilaira RVC image
+                - **RVC Project**: Original Developers
+                - **yumereborn**: Ilaria RVC image
+                - **Mikus**: Ilaria Updater & Downloader
                                 
                 ### **In loving memory of JLabDX** 🕊️
                 ''')
@@ -1556,12 +1554,6 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     outputs=[spk_item, protect0, protect1, file_index2, file_index4, modelload_out],
                     api_name="infer_change_voice",
                 )      
- #               sid1.change(
- #                   fn=vc.get_vc,
- #                   inputs=[sid1, protect0, protect1],
- #                   outputs=[spk_item, protect0, protect1, file_index2, file_index4, modelload_out],
- #                   api_name="infer_change_voice",
- #               )                        
         with gr.TabItem(i18n("")):
             gr.Markdown('''
                 ![ilaria](https://i.ytimg.com/vi/5PWqt2Wg-us/maxresdefault.jpg)
