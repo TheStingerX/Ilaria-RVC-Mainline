@@ -1349,7 +1349,6 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         value=gpus if gpus != "" else "0",
                         interactive=True,
                         )
-
                         with gr.Group():
                             if_save_latest13 = gr.Radio(
                                 label=i18n("Save last ckpt as final Model"),
@@ -1382,19 +1381,6 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                                 inputs=[f0method8],
                                 outputs=[gpus_rmvpe],
                             )        
-                    gpus_rmvpe = gr.Textbox(
-                            label=i18n(
-                                "rmvpe_gpu will use your GPU instead of the CPU for the feature extraction"
-                            ),
-                            value="%s-%s" % (gpus, gpus),
-                            interactive=True,
-                            visible=F0GPUVisible,
-                        )
-                    f0method8.change(
-                        fn=change_f0_method,
-                        inputs=[f0method8],
-                        outputs=[gpus_rmvpe],
-                    )        
 
             with gr.Row():
                 pretrained_G14 = gr.Textbox(
@@ -1402,7 +1388,6 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     choices=list(pretrained_G_files.values()),
                     value=pretrained_G_files.get('f0G32.pth', ''),
                     visible=False,
-
                     interactive=True,
                 )
                 pretrained_D15 = gr.Textbox(
@@ -1528,40 +1513,37 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                           inputs=[audio_input],
                           outputs=[training_info_output]
             )
-
                 with gr.Accordion('Credits', open=False):
                     gr.Markdown('''
                 ## All the amazing people who worked on this!
                 
-		### Developers
-		
-		- **Ilaria**: Founder, Lead Developer
-		- **Yui**: Training feature
-		- **GDR-**: Inference feature
-		- **Poopmaster**: Model downloader, Model importer
-		- **kitlemonfoot**: Ilaria TTS implementation
-		- **eddycrack864**: UVR5 implementation
-		- **Diablo**: Various fixes, UI features
-		
-		### Beta Tester
-		
-		- **Charlotte**: Beta Tester, Advisor
-		- **mrm0dz**: Beta Tester, Advisor
-		- **RME**: Beta Tester
-		- **Delik**: Beta Tester
-		- - **inductivegrub**: BEta Tester
-		
-		### Pretrains Makers
-		
-		- **simplcup**: Ov2Super
-		- **mustar22**: RIN_E3
-		- **mustar22**: Snowie
-		
-		### Other
-		
-		- **RVC Project**: Original Developers
-		- **yumereborn**: Ilaria RVC image
-		- **Mikus**: Ilaria Updater & Downloader
+                ### Developers
+                
+                - **Ilaria**: Founder, Lead Developer
+                - **Yui**: Training feature
+                - **GDR-**: Inference feature
+                - **Poopmaster**: Model downloader, Model importer
+                - **kitlemonfoot**: Ilaria TTS implementation
+                - **eddycrack864**: UVR5 implementation
+                - **Diablo**: Bug Fixes, UI help.
+                                
+                ### Beta Tester
+                
+                - **Charlotte**: Beta Tester
+                - **RME**: Beta Tester
+                - **Delik**: Beta Tester
+                
+                ### Pretrains Makers
+
+                - **simplcup**: Ov2Super
+                - **mustar22**: RIN_E3
+                - **mustar22**: Snowie
+                
+                ### Other
+                
+                - **RVC Project**: Original Developers
+                - **yumereborn**: Ilaria RVC image
+                - **Mikus**: Ilaria Updater & Downloader
                                 
                 ### **In loving memory of JLabDX** 🕊️
                 ''')
