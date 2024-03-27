@@ -1296,14 +1296,6 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         value=0,
                         interactive=True,
                     )
-                    but1 = gr.Button(i18n("Process Data"), variant="primary")
-                    info1 = gr.Textbox(label=i18n("Output"), value="")
-                    but1.click(
-                        preprocess_dataset,
-                        [trainset_dir4, exp_dir1, sr2, np7],
-                        [info1],
-                        api_name="train_preprocess",
-                    )
             with gr.Group():
                 gr.Markdown(value=i18n(""))
                 with gr.Row():
@@ -1334,26 +1326,10 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                             interactive=True,
                             visible=F0GPUVisible,
                         )
-                    but2 = gr.Button(i18n("Feature Extraction"), variant="primary")
-                    info2 = gr.Textbox(label=i18n("Output"), value="", max_lines=8)
                     f0method8.change(
                         fn=change_f0_method,
                         inputs=[f0method8],
                         outputs=[gpus_rmvpe],
-                    )
-                    but2.click(
-                        extract_f0_feature,
-                        [
-                            gpus6,
-                            np7,
-                            f0method8,
-                            if_f0_3,
-                            exp_dir1,
-                            version19,
-                            gpus_rmvpe,
-                        ],
-                        [info2],
-                        api_name="train_extract_f0_feature",
                     )
             with gr.Group():
                 gr.Markdown(value=i18n(""))
@@ -1440,10 +1416,35 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     value=gpus if gpus != "" else "0",
                     interactive=True,
                 )
-                but3 = gr.Button(i18n("Train Model"), variant="primary")
-                but4 = gr.Button(i18n("Train Index"), variant="primary")
-                info3 = gr.Textbox(label=i18n("Output"), value="", max_lines=10)
-                but3.click(
+            with gr.Group():
+                with gr.Row():
+                 but1 = gr.Button(i18n("1. Process Data"), variant="primary")
+                 but2 = gr.Button(i18n("2. Feature Extraction"), variant="primary")
+                 but4 = gr.Button(i18n("3. Train Index"), variant="primary")
+                 but3 = gr.Button(i18n("4. Train Model"), variant="primary")
+                 info = gr.Textbox(label=i18n("Output"), value="", max_lines=10)
+                 but1.click(
+                    preprocess_dataset,
+                        [trainset_dir4, exp_dir1, sr2, np7],
+                        [info],
+                        api_name="train_preprocess",
+                     )
+                 but2.click(
+                    extract_f0_feature,
+                        [
+                            gpus6,
+                            np7,
+                            f0method8,
+                            if_f0_3,
+                            exp_dir1,
+                            version19,
+                            gpus_rmvpe,
+                        ],
+                        [info],
+                        api_name="train_extract_f0_feature",
+                 )
+                 but4.click(train_index, [exp_dir1, version19], info)
+                 but3.click(
                     click_train,
                     [
                         exp_dir1,
@@ -1461,10 +1462,10 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         if_save_every_weights18,
                         version19,
                     ],
-                    info3,
+                    info,
                     api_name="train_start",
-                )
-                but4.click(train_index, [exp_dir1, version19], info3)
+                 )
+                 but4.click(train_index, [exp_dir1, version19], info)
         
         with gr.TabItem(i18n("Extra")):
                 with gr.Accordion('Model Info', open=False):
