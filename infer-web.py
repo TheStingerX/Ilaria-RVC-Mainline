@@ -2,6 +2,7 @@ import os
 import sys
 from dotenv import load_dotenv
 import requests
+import wave
 import zipfile
 now_dir = os.getcwd()
 sys.path.append(now_dir)
@@ -317,31 +318,42 @@ def get_audio_duration(audio_file_path):
 def clean():
     return {"value": "", "__type__": "update"}
 
+def durations(sample_rate, model_options, qualities, duration):
+    if duration <= 350:
+        return qualities['short']
+    else:
+        if sample_rate == 32000:
+            return model_options['32k']
+        elif sample_rate == 40000:
+            return model_options['40k']
+        elif sample_rate == 48000:
+            return model_options['48k']
+        else:
+            return qualities['other']
+
 def get_training_info(audio_file):
+    if audio_file is None:
+        return 'Please provide an audio file!'
     duration = get_audio_duration(audio_file)
-
-    training_params = {
-        (0, 2): (150, 'Ov2'),
-        (2, 3): (200, 'Ov2'),
-        (3, 5): (250, 'Ov2'),
-        (5, 10): (300, 'Normal'),
-        (10, 25): (500, 'Normal'),
-        (25, 45): (700, 'Normal'),
-        (45, 60): (1000, 'Normal')
+    sample_rate = wave.open(audio_file, 'rb').getframerate()
+    model_options = {
+        '32k': ['OV2-32k', 'Snowie-V3.1-32k', 'RVC2-32k'],
+        '40k': ['OV2-40k', 'Snowie-40k', 'RIN-40k', 'RVC2-40k', 'SnowieV3.1-X-RinE3-40k'],
+        '48k': ['Snowie-48k', 'SnowieV3.1-48k', 'RVC2-48k']
     }
-
-    # Format the duration to two decimal places for better readability
-    formatted_duration = round(duration, 2)
-
-    for (min_duration, max_duration), (epochs, pretrain) in training_params.items():
-        if min_duration <= duration < max_duration:
-            return f"For an audio of {formatted_duration} minutes, use {epochs} epochs and {pretrain} pretrain."
-
-    if duration >= 60:
-        return "Datasets over 1 hour can result easily in overtraining; consider trimming down your dataset."
-
-    # Handle case where the audio duration is less than the minimum specified
-    return "The audio duration does not meet the minimum requirement for training."
+    qualities = {
+        'short': ['OV2-32k', 'OV2-40k'],
+        'other': ['RIN-40k', 'RVC2-32k', 'RVC2-40k', 'RVC2-48k'],
+        'unrecommended': ['Snowie-V3.1-40k', 'Snowie-V3.1-32k', 'SnowieV3.1-X-RinE3-40k', 'Snowie-48k', 'Snowie-40k']
+    }
+    info = durations(sample_rate, model_options, qualities, duration)
+    if len(info) > 1:
+        if len(info) == 2:
+            return f'You can use the following pretrains: {info[0] + " or " + info[1]}. This should suit your provided file.'
+        else:
+            return f"You can use the following pretrains: {', '.join(info[:-1]) + ' or ' + info[-1]}. This should suit your provided file."
+    else:
+        return f'You should use {info[0]}. This should suit your provided file.'
 
 sr_dict = {
     "32k": 32000, "40k": 40000, "48k": 48000, "OV2-32k": 32000, "OV2-40k": 40000, "RIN-40k": 40000, "Snowie-40k": 40000, "Snowie-48k": 48000, "SnowieV3.1-40k": 40000, "SnowieV3.1-32k": 32000, "SnowieV3.1-48k": 48000, "SnowieV3.1-RinE3-40K": 40000,
@@ -1505,7 +1517,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 with gr.Accordion('Training Helper', open=False):
                     with gr.Column():
                          audio_input = gr.Audio(type="filepath", label="Upload your audio file")
-                         gr.Text("Please note that these results are approximate and intended to provide a general idea for beginners.")
+                         gr.Text("Please note that these results are approximate and intended to provide a general idea for beginners.", label='Notice:')
                          training_info_output = gr.Textbox(label="Training Information")
                          get_info_button = gr.Button("Get Training Info")
                          get_info_button.click(
@@ -1513,6 +1525,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                           inputs=[audio_input],
                           outputs=[training_info_output]
             )
+
                 with gr.Accordion('Credits', open=False):
                     gr.Markdown('''
                 ## All the amazing people who worked on this!
