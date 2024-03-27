@@ -83,7 +83,7 @@ Don’t worry if you’re not a tech whiz. Ilaria RVC is designed to be easy to 
 
 - **RVC Project**: Original Developers
 - **yumereborn**: Ilaria RVC image
-- **Mikus**: Updater
+- **Mikus**: Ilaria Updater & Downloader
 
 ### **In loving memory of JLabDX** 🕊️
 
