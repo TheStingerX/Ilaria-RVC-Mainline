@@ -65,7 +65,8 @@ Don’t worry if you’re not a tech whiz. Ilaria RVC is designed to be easy to 
 - **Poopmaster**: Model downloader, Model importer
 - **kitlemonfoot**: Ilaria TTS implementation
 - **eddycrack864**: UVR5 implementation
-- **Diablo**: Various fixes, UI features
+- **Mikus**: Ilaria Updater & Downloader
+- **Diablo**: Pretrain Automation, UI features, Various fixes
 
 ### Beta Tester
 
@@ -73,7 +74,8 @@ Don’t worry if you’re not a tech whiz. Ilaria RVC is designed to be easy to 
 - **mrm0dz**: Beta Tester, Advisor
 - **RME**: Beta Tester
 - **Delik**: Beta Tester
-- - **inductivegrub**: BEta Tester
+- **inductivegrub**: Beta Tester
+- **l3af**: Beta Tester, Helper
 
 ### Pretrains Makers
 
@@ -85,10 +87,8 @@ Don’t worry if you’re not a tech whiz. Ilaria RVC is designed to be easy to 
 
 - **RVC Project**: Original Developers
 - **yumereborn**: Ilaria RVC image
-- **Mikus**: Ilaria Updater & Downloader
 
 ### **In loving memory of JLabDX** 🕊️
-
 
 ## 🤝 Contributing 🤝
 
