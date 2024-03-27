@@ -80,8 +80,7 @@ Don’t worry if you’re not a tech whiz. Ilaria RVC is designed to be easy to 
 ### Pretrains Makers
 
 - **simplcup**: Ov2Super
-- **mustar22**: RIN_E3
-- **mustar22**: Snowie
+- **mustar22**: RIN_E3 & Snowie
 
 ### Other
 
