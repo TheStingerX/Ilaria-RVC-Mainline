@@ -160,7 +160,8 @@ class VC:
     def vc_single(
         self,
         sid,
-        input_audio_path,
+        input_audio_path_select,
+        input_audio_path_uploaded,
         f0_up_key,
         f0_file,
         f0_method,
@@ -173,13 +174,16 @@ class VC:
         protect,
     ):
         # if the type of input_audio_path is temporaryFileWrapper, it means the user has used a voice recording, so use the filepath of the temporary file
-        if input_audio_path is None:
-            return "You need to upload an audio", None
+        
+        if (input_audio_path_uploaded is None) and (input_audio_path_select is None):
+            return "You need to upload an audio or select from audios", None
         f0_up_key = int(f0_up_key)
-
-        if isinstance(input_audio_path, str) and os.path.isfile(input_audio_path):
-            print("input_audio0 is a file path")
-            input_audio_path = open(input_audio_path, 'rb')
+        if (isinstance(input_audio_path_uploaded, str) and os.path.isfile(input_audio_path_uploaded)) and (isinstance(input_audio_path_select, str) and os.path.isfile(input_audio_path_select)):
+            print("Dual input!!! Using uploaded instead of selected.")
+            input_audio_path = open(input_audio_path_uploaded, 'rb')
+        if (not (isinstance(input_audio_path_uploaded, str) and os.path.isfile(input_audio_path_uploaded))) and (isinstance(input_audio_path_select, str) and os.path.isfile(input_audio_path_select)):
+            print("Using Selected file")
+            input_audio_path = open(input_audio_path_select, 'rb')           
 
         try:
             audio = load_audio(input_audio_path.name, 16000)

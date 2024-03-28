@@ -129,7 +129,24 @@ class ToolButton(gr.Button, gr.components.FormComponent):
 
 weight_root = os.getenv("weight_root")
 index_root = os.getenv("index_root")
+audio_root = "audios"
+sup_audioext = {'wav', 'mp3', 'flac', 'ogg', 'opus',
+                'm4a', 'mp4', 'aac', 'alac', 'wma',
+                'aiff', 'webm', 'ac3'}
 
+names        = [os.path.join(root, file)
+               for root, _, files in os.walk(weight_root)
+               for file in files
+               if file.endswith((".pth", ".onnx"))]
+
+indexes_list = [os.path.join(root, name)
+               for root, _, files in os.walk(index_root, topdown=False) 
+               for name in files 
+               if name.endswith(".index") and "trained" not in name]
+audio_paths  = [os.path.join(root, name)
+               for root, _, files in os.walk(audio_root, topdown=False) 
+               for name in files
+               if name.endswith(tuple(sup_audioext))]
 def get_pretrained_files(directory, keyword, filter_str):
     file_paths = {}
     for filename in os.listdir(directory):
@@ -256,7 +273,7 @@ def tts_and_convert(ttsvoice, text, spk_item, vc_transform, f0_file, f0method, f
 
     #Calls vc similar to any other inference.
     #This is why we needed all the other shit in our call, otherwise we couldn't infer.
-    return vc.vc_single(spk_item, aud_path, vc_transform, f0_file, f0method, file_index1, file_index2, index_rate, filter_radius, resample_sr, rms_mix_rate, protect)
+    return vc.vc_single(spk_item ,aud_path, None, vc_transform, f0_file, f0method, file_index1, file_index2, index_rate, filter_radius, resample_sr, rms_mix_rate, protect)
 
 
 def import_files(file):
@@ -899,14 +916,20 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     with gr.Row():
                         with gr.Column():
                             with gr.Accordion('Audio input', open=True):
-
+                                input_audio0 = gr.Dropdown(
+                                    label=i18n("Select a file from the /audios/ folder"),
+                                    choices=sorted(audio_paths),
+                                    value='',
+                                    interactive=True,
+                                )
                                 
-                                input_audio0 = gr.Audio(
-                                    label=i18n("Upload Audio file"),
+                                input_audio1 = gr.Audio(
+                                    label=i18n("Or you can upload Audio file"),
                                     type="filepath",
                                 )
                                 record_button = gr.Audio(source="microphone", label="Or you can use your microphone!",
                                                          type="filepath")
+
                                 record_button.change(
                                     fn=lambda x: x,
                                     inputs=[record_button],
@@ -1110,6 +1133,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                             [
                                 spk_item,
                                 input_audio0,
+                                input_audio1,
                                 vc_transform0,
                                 f0_file,
                                 f0method0,
