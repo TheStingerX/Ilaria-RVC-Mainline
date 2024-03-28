@@ -333,6 +333,11 @@ def get_audio_duration(audio_file_path):
 def clean():
     return {"value": "", "__type__": "update"}
 
+
+sr_dict = {
+    "32k": 32000, "40k": 40000, "48k": 48000, "OV2-32k": 32000, "OV2-40k": 40000, "RIN-40k": 40000, "Snowie-40k": 40000, "Snowie-48k": 48000, "SnowieV3.1-40k": 40000, "SnowieV3.1-32k": 32000, "SnowieV3.1-48k": 48000, "SnowieV3.1-RinE3-40K": 40000,
+}
+
 def durations(sample_rate, model_options, qualities, duration):
     if duration <= 350:
         return qualities['short']
