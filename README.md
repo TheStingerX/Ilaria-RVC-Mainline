@@ -74,7 +74,7 @@ Don’t worry if you’re not a tech whiz. Ilaria RVC is designed to be easy to 
 - **mrm0dz**: Beta Tester, Advisor
 - **RME**: Beta Tester
 - **Delik**: Beta Tester
-- **inductivegrub**: Beta Tester
+- **inductiveGrub**: Beta Tester
 - **l3af**: Beta Tester, Helper
 
 ### Pretrains Makers
