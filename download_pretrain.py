@@ -14,12 +14,14 @@ def main():
 
     print('Choose which pretrains you want (number):')
     pretrain_choice = input('> ')
-    if pretrain_choice == ind:
+    if int(pretrain_choice) != ind:
+        pretrain_helper.download_pretrain(pretrains[int(pretrain_choice)])
         for i in pretrains:
             pretrain_helper.download_pretrain(i)
 
-    elif pretrain_choice != ind:
-        pretrain_helper.download_pretrain(pretrains[int(pretrain_choice)])
+    elif int(pretrain_choice) == ind:
+        for i in pretrains:
+            pretrain_helper.download_pretrain(i)
 try:
     main()
 except KeyboardInterrupt:
