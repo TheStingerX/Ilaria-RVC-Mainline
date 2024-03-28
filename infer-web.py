@@ -326,9 +326,7 @@ def import_button_click(file):
 
 
 def get_audio_duration(audio_file_path):
-    # Retrieve audio file info using the soundfile library
     audio_info = sf.info(audio_file_path)
-    # Convert duration in seconds to minutes
     duration_minutes = audio_info.duration / 60
     return duration_minutes
       
@@ -353,28 +351,25 @@ def get_training_info(audio_file):
         return 'Please provide an audio file!'
     duration = get_audio_duration(audio_file)
     sample_rate = wave.open(audio_file, 'rb').getframerate()
-    model_options = {
-        '32k': ['OV2-32k', 'Snowie-V3.1-32k', 'RVC2-32k'],
-        '40k': ['OV2-40k', 'Snowie-40k', 'RIN-40k', 'RVC2-40k', 'SnowieV3.1-X-RinE3-40k'],
-        '48k': ['Snowie-48k', 'SnowieV3.1-48k', 'RVC2-48k']
-    }
-    qualities = {
-        'short': ['OV2-32k', 'OV2-40k'],
-        'other': ['RIN-40k', 'RVC2-32k', 'RVC2-40k', 'RVC2-48k'],
-        'unrecommended': ['Snowie-V3.1-40k', 'Snowie-V3.1-32k', 'SnowieV3.1-X-RinE3-40k', 'Snowie-48k', 'Snowie-40k']
-    }
-    info = durations(sample_rate, model_options, qualities, duration)
-    if len(info) > 1:
-        if len(info) == 2:
-            return f'You can use the following pretrains: {info[0] + " or " + info[1]}. This should suit your provided file.'
-        else:
-            return f"You can use the following pretrains: {', '.join(info[:-1]) + ' or ' + info[-1]}. This should suit your provided file."
-    else:
-        return f'You should use {info[0]}. This should suit your provided file.'
 
-sr_dict = {
-    "32k": 32000, "40k": 40000, "48k": 48000, "OV2-32k": 32000, "OV2-40k": 40000, "RIN-40k": 40000, "Snowie-40k": 40000, "Snowie-48k": 48000, "SnowieV3.1-40k": 40000, "SnowieV3.1-32k": 32000, "SnowieV3.1-48k": 48000, "SnowieV3.1-RinE3-40K": 40000,
-}
+    training_info = {
+        (0, 2): (150, 'OV2'),
+        (2, 3): (200, 'OV2'),
+        (3, 5): (250, 'OV2'),
+        (5, 10): (300, 'Normal'),
+        (10, 25): (500, 'Normal'),
+        (25, 45): (700, 'Normal'),
+        (45, 60): (1000, 'Normal')
+    }
+
+    for (min_duration, max_duration), (epochs, pretrain) in training_info.items():
+        if min_duration <= duration < max_duration:
+            break
+    else:
+        return 'Duration is not within the specified range!'
+
+    return f'You should use the **{pretrain}** pretrain with **{epochs}** epochs at **{sample_rate/1000}khz** sample rate.'
+
 
 def if_done(done, p):
     while 1:
@@ -914,22 +909,20 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
             with gr.TabItem(i18n("Inference")):
                 with gr.Group():
                     with gr.Row():
-                        with gr.Column():
-                            with gr.Accordion('Audio input', open=True):
-                                input_audio0 = gr.Dropdown(
-                                    label=i18n("Select a file from the /audios/ folder"),
-                                    choices=sorted(audio_paths),
-                                    value='',
-                                    interactive=True,
-                                )
-                                
+                        with gr.Column():                                
                                 input_audio1 = gr.Audio(
                                     label=i18n("Or you can upload Audio file"),
                                     type="filepath",
                                 )
-                                record_button = gr.Audio(source="microphone", label="Or you can use your microphone!",
+                                record_button = gr.Audio(source="microphone", label="Use your microphone",
                                                          type="filepath")
-
+                                
+                                input_audio0 = gr.Dropdown(
+                                    label=i18n("Select a file from the audio folder"),
+                                    choices=sorted(audio_paths),
+                                    value='',
+                                    interactive=True,
+                                )
                                 record_button.change(
                                     fn=lambda x: x,
                                     inputs=[record_button],
@@ -1542,7 +1535,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     with gr.Column():
                          audio_input = gr.Audio(type="filepath", label="Upload your audio file")
                          gr.Text("Please note that these results are approximate and intended to provide a general idea for beginners.", label='Notice:')
-                         training_info_output = gr.Textbox(label="Training Information")
+                         training_info_output = gr.Markdown(label="Training Information:")
                          get_info_button = gr.Button("Get Training Info")
                          get_info_button.click(
                           fn=on_button_click,
