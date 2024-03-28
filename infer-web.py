@@ -1497,6 +1497,13 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 with gr.Accordion('Model Info', open=False):
                     with gr.Column():
                         sid1 = gr.Dropdown(label=i18n("Voice Model"), choices=sorted(names))
+                        refresh_button = gr.Button(i18n("Refresh"), variant="primary")
+                        refresh_button.click(
+                         fn=change_choices,
+                            inputs=[],
+                            outputs=[sid1, file_index2],
+                            api_name="infer_refresh",
+                            )
                         modelload_out = gr.Textbox(label="Model Metadata")
                         get_model_info_button = gr.Button(i18n("Get Model Info"))
                         get_model_info_button.click(
