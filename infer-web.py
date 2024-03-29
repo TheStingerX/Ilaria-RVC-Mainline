@@ -375,7 +375,6 @@ def get_training_info(audio_file):
 
     return f'You should use the **{pretrain}** pretrain with **{epochs}** epochs at **{sample_rate/1000}khz** sample rate.'
 
-
 def if_done(done, p):
     while 1:
         if p.poll() is None:
@@ -903,8 +902,8 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 vc_transform0 = gr.inputs.Slider(
                                 label=i18n(
                                     "Pitch: 0 from man to man (or woman to woman); 12 from man to woman and -12 from woman to man."),
-                                minimum=-12,
-                                maximum=12,
+                                minimum=-24,
+                                maximum=24,
                                 default=0,
                                 step=1,
                 )
@@ -1509,7 +1508,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                             outputs=[sid1, file_index2],
                             api_name="infer_refresh",
                             )
-                        modelload_out = gr.Textbox(label="Model Metadata")
+                        modelload_out = gr.Textbox(label="Model Metadata", interactive=False, lines=4)
                         get_model_info_button = gr.Button(i18n("Get Model Info"))
                         get_model_info_button.click(
                          fn=vc.get_vc, 
