@@ -47,3 +47,4 @@ python-dotenv>=1.0.0
 av
 edge-tts
 pydub
+torchfcpe
