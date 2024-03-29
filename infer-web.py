@@ -915,14 +915,14 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 with gr.Group():
                     with gr.Row():
                         with gr.Column():                                
-                                input_audio1 = gr.Audio(
-                                    label=i18n("Or you can upload Audio file"),
+                                input_audio0 = gr.Audio(
+                                    label=i18n("Upload Audio file"),
                                     type="filepath",
                                 )
                                 record_button = gr.Audio(source="microphone", label="Use your microphone",
                                                          type="filepath")
                                 
-                                input_audio0 = gr.Dropdown(
+                                input_audio1 = gr.Dropdown(
                                     label=i18n("Select a file from the audio folder"),
                                     choices=sorted(audio_paths),
                                     value='',
