@@ -1452,7 +1452,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                  but2 = gr.Button(i18n("2. Feature Extraction"), variant="primary")
                  but4 = gr.Button(i18n("3. Train Index"), variant="primary")
                  but3 = gr.Button(i18n("4. Train Model"), variant="primary")
-                 info = gr.Textbox(label=i18n("Output"), value="", max_lines=10)
+                 info = gr.Textbox(label=i18n("Output"), value="", max_lines=5, lines=5)
                  but1.click(
                     preprocess_dataset,
                         [trainset_dir4, exp_dir1, sr2, np7],
