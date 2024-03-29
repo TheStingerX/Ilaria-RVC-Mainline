@@ -2,6 +2,7 @@ import os
 import sys
 from dotenv import load_dotenv
 import requests
+import wave
 import zipfile
 now_dir = os.getcwd()
 sys.path.append(now_dir)
@@ -128,7 +129,24 @@ class ToolButton(gr.Button, gr.components.FormComponent):
 
 weight_root = os.getenv("weight_root")
 index_root = os.getenv("index_root")
+audio_root = "audios"
+sup_audioext = {'wav', 'mp3', 'flac', 'ogg', 'opus',
+                'm4a', 'mp4', 'aac', 'alac', 'wma',
+                'aiff', 'webm', 'ac3'}
 
+names        = [os.path.join(root, file)
+               for root, _, files in os.walk(weight_root)
+               for file in files
+               if file.endswith((".pth", ".onnx"))]
+
+indexes_list = [os.path.join(root, name)
+               for root, _, files in os.walk(index_root, topdown=False) 
+               for name in files 
+               if name.endswith(".index") and "trained" not in name]
+audio_paths  = [os.path.join(root, name)
+               for root, _, files in os.walk(audio_root, topdown=False) 
+               for name in files
+               if name.endswith(tuple(sup_audioext))]
 def get_pretrained_files(directory, keyword, filter_str):
     file_paths = {}
     for filename in os.listdir(directory):
@@ -255,7 +273,7 @@ def tts_and_convert(ttsvoice, text, spk_item, vc_transform, f0_file, f0method, f
 
     #Calls vc similar to any other inference.
     #This is why we needed all the other shit in our call, otherwise we couldn't infer.
-    return vc.vc_single(spk_item, aud_path, vc_transform, f0_file, f0method, file_index1, file_index2, index_rate, filter_radius, resample_sr, rms_mix_rate, protect)
+    return vc.vc_single(spk_item ,aud_path, None, vc_transform, f0_file, f0method, file_index1, file_index2, index_rate, filter_radius, resample_sr, rms_mix_rate, protect)
 
 
 def import_files(file):
@@ -308,44 +326,55 @@ def import_button_click(file):
 
 
 def get_audio_duration(audio_file_path):
-    # Retrieve audio file info using the soundfile library
     audio_info = sf.info(audio_file_path)
-    # Convert duration in seconds to minutes
     duration_minutes = audio_info.duration / 60
     return duration_minutes
       
 def clean():
     return {"value": "", "__type__": "update"}
 
-def get_training_info(audio_file):
-    duration = get_audio_duration(audio_file)
 
-    training_params = {
-        (0, 2): (150, 'Ov2'),
-        (2, 3): (200, 'Ov2'),
-        (3, 5): (250, 'Ov2'),
+sr_dict = {
+    "32k": 32000, "40k": 40000, "48k": 48000, "OV2-32k": 32000, "OV2-40k": 40000, "RIN-40k": 40000, "Snowie-40k": 40000, "Snowie-48k": 48000, "SnowieV3.1-40k": 40000, "SnowieV3.1-32k": 32000, "SnowieV3.1-48k": 48000, "SnowieV3.1-RinE3-40K": 40000,
+}
+
+def durations(sample_rate, model_options, qualities, duration):
+    if duration <= 350:
+        return qualities['short']
+    else:
+        if sample_rate == 32000:
+            return model_options['32k']
+        elif sample_rate == 40000:
+            return model_options['40k']
+        elif sample_rate == 48000:
+            return model_options['48k']
+        else:
+            return qualities['other']
+
+def get_training_info(audio_file):
+    if audio_file is None:
+        return 'Please provide an audio file!'
+    duration = get_audio_duration(audio_file)
+    sample_rate = wave.open(audio_file, 'rb').getframerate()
+
+    training_info = {
+        (0, 2): (150, 'OV2'),
+        (2, 3): (200, 'OV2'),
+        (3, 5): (250, 'OV2'),
         (5, 10): (300, 'Normal'),
         (10, 25): (500, 'Normal'),
         (25, 45): (700, 'Normal'),
         (45, 60): (1000, 'Normal')
     }
 
-    # Format the duration to two decimal places for better readability
-    formatted_duration = round(duration, 2)
-
-    for (min_duration, max_duration), (epochs, pretrain) in training_params.items():
+    for (min_duration, max_duration), (epochs, pretrain) in training_info.items():
         if min_duration <= duration < max_duration:
-            return f"For an audio of {formatted_duration} minutes, use {epochs} epochs and {pretrain} pretrain."
+            break
+    else:
+        return 'Duration is not within the specified range!'
 
-    if duration >= 60:
-        return "Datasets over 1 hour can result easily in overtraining; consider trimming down your dataset."
+    return f'You should use the **{pretrain}** pretrain with **{epochs}** epochs at **{sample_rate/1000}khz** sample rate.'
 
-    # Handle case where the audio duration is less than the minimum specified
-    return "The audio duration does not meet the minimum requirement for training."
-
-sr_dict = {
-    "32k": 32000, "40k": 40000, "48k": 48000, "OV2-32k": 32000, "OV2-40k": 40000, "RIN-40k": 40000, "Snowie-40k": 40000, "Snowie-48k": 48000, "SnowieV3.1-40k": 40000, "SnowieV3.1-32k": 32000, "SnowieV3.1-48k": 48000, "SnowieV3.1-RinE3-40K": 40000,
-}
 
 def if_done(done, p):
     while 1:
@@ -885,16 +914,20 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
             with gr.TabItem(i18n("Inference")):
                 with gr.Group():
                     with gr.Row():
-                        with gr.Column():
-                            with gr.Accordion('Audio input', open=True):
-
-                                
+                        with gr.Column():                                
                                 input_audio0 = gr.Audio(
                                     label=i18n("Upload Audio file"),
                                     type="filepath",
                                 )
-                                record_button = gr.Audio(source="microphone", label="Or you can use your microphone!",
+                                record_button = gr.Audio(source="microphone", label="Use your microphone",
                                                          type="filepath")
+                                
+                                input_audio1 = gr.Dropdown(
+                                    label=i18n("Select a file from the audio folder"),
+                                    choices=sorted(audio_paths),
+                                    value='',
+                                    interactive=True,
+                                )
                                 record_button.change(
                                     fn=lambda x: x,
                                     inputs=[record_button],
@@ -1098,6 +1131,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                             [
                                 spk_item,
                                 input_audio0,
+                                input_audio1,
                                 vc_transform0,
                                 f0_file,
                                 f0method0,
@@ -1349,7 +1383,6 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         value=gpus if gpus != "" else "0",
                         interactive=True,
                         )
-
                         with gr.Group():
                             if_save_latest13 = gr.Radio(
                                 label=i18n("Save last ckpt as final Model"),
@@ -1382,19 +1415,6 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                                 inputs=[f0method8],
                                 outputs=[gpus_rmvpe],
                             )        
-                    gpus_rmvpe = gr.Textbox(
-                            label=i18n(
-                                "rmvpe_gpu will use your GPU instead of the CPU for the feature extraction"
-                            ),
-                            value="%s-%s" % (gpus, gpus),
-                            interactive=True,
-                            visible=F0GPUVisible,
-                        )
-                    f0method8.change(
-                        fn=change_f0_method,
-                        inputs=[f0method8],
-                        outputs=[gpus_rmvpe],
-                    )        
 
             with gr.Row():
                 pretrained_G14 = gr.Textbox(
@@ -1402,7 +1422,6 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     choices=list(pretrained_G_files.values()),
                     value=pretrained_G_files.get('f0G32.pth', ''),
                     visible=False,
-
                     interactive=True,
                 )
                 pretrained_D15 = gr.Textbox(
@@ -1483,6 +1502,13 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 with gr.Accordion('Model Info', open=False):
                     with gr.Column():
                         sid1 = gr.Dropdown(label=i18n("Voice Model"), choices=sorted(names))
+                        refresh_button = gr.Button(i18n("Refresh"), variant="primary")
+                        refresh_button.click(
+                         fn=change_choices,
+                            inputs=[],
+                            outputs=[sid1, file_index2],
+                            api_name="infer_refresh",
+                            )
                         modelload_out = gr.Textbox(label="Model Metadata")
                         get_model_info_button = gr.Button(i18n("Get Model Info"))
                         get_model_info_button.click(
@@ -1520,8 +1546,8 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 with gr.Accordion('Training Helper', open=False):
                     with gr.Column():
                          audio_input = gr.Audio(type="filepath", label="Upload your audio file")
-                         gr.Text("Please note that these results are approximate and intended to provide a general idea for beginners.")
-                         training_info_output = gr.Textbox(label="Training Information")
+                         gr.Text("Please note that these results are approximate and intended to provide a general idea for beginners.", label='Notice:')
+                         training_info_output = gr.Markdown(label="Training Information:")
                          get_info_button = gr.Button("Get Training Info")
                          get_info_button.click(
                           fn=on_button_click,
@@ -1533,35 +1559,33 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     gr.Markdown('''
                 ## All the amazing people who worked on this!
                 
-		### Developers
-		
-		- **Ilaria**: Founder, Lead Developer
-		- **Yui**: Training feature
-		- **GDR-**: Inference feature
-		- **Poopmaster**: Model downloader, Model importer
-		- **kitlemonfoot**: Ilaria TTS implementation
-		- **eddycrack864**: UVR5 implementation
-		- **Diablo**: Various fixes, UI features
-		
-		### Beta Tester
-		
-		- **Charlotte**: Beta Tester, Advisor
-		- **mrm0dz**: Beta Tester, Advisor
-		- **RME**: Beta Tester
-		- **Delik**: Beta Tester
-		- - **inductivegrub**: BEta Tester
-		
-		### Pretrains Makers
-		
-		- **simplcup**: Ov2Super
-		- **mustar22**: RIN_E3
-		- **mustar22**: Snowie
-		
-		### Other
-		
-		- **RVC Project**: Original Developers
-		- **yumereborn**: Ilaria RVC image
-		- **Mikus**: Ilaria Updater & Downloader
+                ### Developers
+                
+                - **Ilaria**: Founder, Lead Developer
+                - **Yui**: Training feature
+                - **GDR-**: Inference feature
+                - **Poopmaster**: Model downloader, Model importer
+                - **kitlemonfoot**: Ilaria TTS implementation
+                - **eddycrack864**: UVR5 implementation
+                - **Diablo**: Bug Fixes, UI help.
+                                
+                ### Beta Tester
+                
+                - **Charlotte**: Beta Tester
+                - **RME**: Beta Tester
+                - **Delik**: Beta Tester
+                
+                ### Pretrains Makers
+
+                - **simplcup**: Ov2Super
+                - **mustar22**: RIN_E3
+                - **mustar22**: Snowie
+                
+                ### Other
+                
+                - **RVC Project**: Original Developers
+                - **yumereborn**: Ilaria RVC image
+                - **Mikus**: Ilaria Updater & Downloader
                                 
                 ### **In loving memory of JLabDX** 🕊️
                 ''')
