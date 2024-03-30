@@ -193,6 +193,7 @@ for root, dirs, files in os.walk(index_root, topdown=False):
         if name.endswith(".index") and "trained" not in name:
             index_paths.append("%s/%s" % (root, name))
 
+
 def generate_spectrogram(audio_data, sample_rate, file_name):
     plt.clf()
 
@@ -254,10 +255,12 @@ def change_choices():
         for name in files:
             if name.endswith(".index") and "trained" not in name:
                 index_paths.append("%s/%s" % (root, name))
-    return {"choices": sorted(names), "__type__": "update"}, {
-        "choices": sorted(index_paths),
-        "__type__": "update",
+    audios = [os.path.join(audio_root, file) for file in os.listdir(os.path.join(now_dir, "audios"))]
+
+    return {"choices": sorted(names), "__type__": "update"}, {"choices": sorted(index_paths),"__type__": "update"},{
+        "choices": sorted(audios), "__type__": "update"
     }
+
 
 
 # Define the tts_and_convert function
@@ -273,7 +276,7 @@ def tts_and_convert(ttsvoice, text, spk_item, vc_transform, f0_file, f0method, f
 
     #Calls vc similar to any other inference.
     #This is why we needed all the other shit in our call, otherwise we couldn't infer.
-    return vc.vc_single(spk_item ,aud_path, None, vc_transform, f0_file, f0method, file_index1, file_index2, index_rate, filter_radius, resample_sr, rms_mix_rate, protect)
+    return vc.vc_single(spk_item , None,aud_path, vc_transform, f0_file, f0method, file_index1, file_index2, index_rate, filter_radius, resample_sr, rms_mix_rate, protect)
 
 
 def import_files(file):
@@ -374,6 +377,7 @@ def get_training_info(audio_file):
         return 'Duration is not within the specified range!'
 
     return f'You should use the **{pretrain}** pretrain with **{epochs}** epochs at **{sample_rate/1000}khz** sample rate.'
+
 
 def if_done(done, p):
     while 1:
@@ -1002,7 +1006,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                                     refresh_button.click(
                                         fn=change_choices,
                                         inputs=[],
-                                        outputs=[sid0, file_index2],
+                                        outputs=[sid0, file_index2, input_audio1],
                                         api_name="infer_refresh",
                                     )
                                     file_index1 = gr.Textbox(
