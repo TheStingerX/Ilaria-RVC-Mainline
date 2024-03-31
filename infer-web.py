@@ -8,6 +8,7 @@ now_dir = os.getcwd()
 sys.path.append(now_dir)
 load_dotenv()
 from infer.modules.vc.modules import VC
+from infer.modules.uvr5.modules import UVRHANDLER
 from i18n.i18n import I18nAuto
 from configs.config import Config
 from sklearn.cluster import MiniBatchKMeans
@@ -58,6 +59,32 @@ torch.manual_seed(114514)
 config = Config()
 vc = VC(config)
 
+weight_root = os.getenv("weight_root")
+weight_uvr5_root = os.getenv("weight_uvr5_root")
+index_root = os.getenv("index_root")
+
+names = []
+for name in os.listdir(weight_root):
+    if name.endswith(".pth"):
+        names.append(name)
+index_paths = []
+for root, dirs, files in os.walk(index_root, topdown=False):
+    for name in files:
+        if name.endswith(".index") and "trained" not in name:
+            index_paths.append("%s/%s" % (root, name))
+
+uvr5_names = [
+    '5_HP-Karaoke-UVR.pth',
+    'Kim_Vocal_2.onnx',
+    'MDX23C-8KFFT-InstVoc_HQ_2.ckpt',
+    'UVR-DeEcho-DeReverb.pth',
+    'UVR-Denoise',
+    'Demucs v4: htdemucs_ft',
+    'kuielab_b_bass.onnx',
+    'kuielab_b_drums.onnx',
+    'kuielab_b_other.onnx',
+    'kuielab_b_vocals.onnx'
+]
 if config.dml:
     def forward_dml(ctx, x, scale):
         ctx.scale = scale
@@ -160,20 +187,7 @@ pretrained_G_files = get_pretrained_files(pretrained_directory, "G", "f0")
 pretrained_D_files = get_pretrained_files(pretrained_directory, "D", "f0")
 
 def get_pretrained_models(path_str, f0_str, sr2):
-    sr_mapping = {
-        "32k": f"{f0_str}G32k.pth",
-        "40k": f"{f0_str}G40k.pth",
-        "48k": f"{f0_str}G48k.pth",
-        "OV2-32k": "f0Ov2Super32kG.pth",
-        "OV2-40k": "f0Ov2Super40kG.pth",
-        "RIN-40k": "f0RIN_E3_G40k.pth",
-        "Snowie-40k": "G_Snowie_RuPretrain_EnP.pth",
-        "Snowie-48k": "G_Snowie_Rupretrain_48k_V1.2.pth2",
-        "SnowieV3.1-40k": "G_SnowieV3.1_40k.pth", 
-        "SnowieV3.1-32k": "G_SnowieV3.1_32k.pth",
-        "SnowieV3.1-48k": "G_SnowieV3.1_48k.pth",
-        "SnowieV3.1-RinE3-40K": "G_Snowie-X-Rin_40k.pth"
-    }
+    sr_mapping = pretrain_helper.get_pretrained_models(f0_str)
 
     pretrained_G_filename = sr_mapping.get(sr2, "")
     pretrained_D_filename = pretrained_G_filename.replace("G", "D")
@@ -192,6 +206,7 @@ for root, dirs, files in os.walk(index_root, topdown=False):
     for name in files:
         if name.endswith(".index") and "trained" not in name:
             index_paths.append("%s/%s" % (root, name))
+
 
 def generate_spectrogram(audio_data, sample_rate, file_name):
     plt.clf()
@@ -254,10 +269,12 @@ def change_choices():
         for name in files:
             if name.endswith(".index") and "trained" not in name:
                 index_paths.append("%s/%s" % (root, name))
-    return {"choices": sorted(names), "__type__": "update"}, {
-        "choices": sorted(index_paths),
-        "__type__": "update",
+    audios = [os.path.join(audio_root, file) for file in os.listdir(os.path.join(now_dir, "audios"))]
+
+    return {"choices": sorted(names), "__type__": "update"}, {"choices": sorted(index_paths),"__type__": "update"},{
+        "choices": sorted(audios), "__type__": "update"
     }
+
 
 
 # Define the tts_and_convert function
@@ -273,7 +290,7 @@ def tts_and_convert(ttsvoice, text, spk_item, vc_transform, f0_file, f0method, f
 
     #Calls vc similar to any other inference.
     #This is why we needed all the other shit in our call, otherwise we couldn't infer.
-    return vc.vc_single(spk_item ,aud_path, None, vc_transform, f0_file, f0method, file_index1, file_index2, index_rate, filter_radius, resample_sr, rms_mix_rate, protect)
+    return vc.vc_single(spk_item , None,aud_path, vc_transform, f0_file, f0method, file_index1, file_index2, index_rate, filter_radius, resample_sr, rms_mix_rate, protect)
 
 
 def import_files(file):
@@ -740,9 +757,9 @@ def click_train(
     if pretrained_D15 == "":
         logger.info("No pretrained Discriminator")
     if version19 == "v1" or sr2 == "40k":
-        config_path = "v1/%s.json" % sr2
+        config_path = "configs/v1/%s.json" % sr2
     else:
-        config_path = "v2/%s.json" % sr2
+        config_path = "configs/v2/%s.json" % sr2
     config_save_path = os.path.join(exp_dir, "config.json")
     if not pathlib.Path(config_save_path).exists():
         with open(config_save_path, "w", encoding="utf-8") as f:
@@ -903,8 +920,8 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 vc_transform0 = gr.inputs.Slider(
                                 label=i18n(
                                     "Pitch: 0 from man to man (or woman to woman); 12 from man to woman and -12 from woman to man."),
-                                minimum=-12,
-                                maximum=12,
+                                minimum=-24,
+                                maximum=24,
                                 default=0,
                                 step=1,
                 )
@@ -915,14 +932,14 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 with gr.Group():
                     with gr.Row():
                         with gr.Column():                                
-                                input_audio1 = gr.Audio(
-                                    label=i18n("Or you can upload Audio file"),
+                                input_audio0 = gr.Audio(
+                                    label=i18n("Upload Audio file"),
                                     type="filepath",
                                 )
                                 record_button = gr.Audio(source="microphone", label="Use your microphone",
                                                          type="filepath")
                                 
-                                input_audio0 = gr.Dropdown(
+                                input_audio1 = gr.Dropdown(
                                     label=i18n("Select a file from the audio folder"),
                                     choices=sorted(audio_paths),
                                     value='',
@@ -1003,7 +1020,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                                     refresh_button.click(
                                         fn=change_choices,
                                         inputs=[],
-                                        outputs=[sid0, file_index2],
+                                        outputs=[sid0, file_index2, input_audio1],
                                         api_name="infer_refresh",
                                     )
                                     file_index1 = gr.Textbox(
@@ -1453,7 +1470,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                  but2 = gr.Button(i18n("2. Feature Extraction"), variant="primary")
                  but4 = gr.Button(i18n("3. Train Index"), variant="primary")
                  but3 = gr.Button(i18n("4. Train Model"), variant="primary")
-                 info = gr.Textbox(label=i18n("Output"), value="", max_lines=10)
+                 info = gr.Textbox(label=i18n("Output"), value="", max_lines=5, lines=5)
                  but1.click(
                     preprocess_dataset,
                         [trainset_dir4, exp_dir1, sr2, np7],
@@ -1498,6 +1515,51 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                  )
                  but4.click(train_index, [exp_dir1, version19], info)
         
+        with gr.TabItem(i18n("UVR5")):
+            with gr.Group():
+                gr.Markdown(
+                    value=i18n(
+                        """
+                        - **Kim Vocal 2**: Effortlessly separates vocals and instrumentals, a perfect tool for music enthusiasts.
+                        - **Karaoke 5 HP**: Expertly isolates two overlapping voices, making it a valuable asset for duet performances.
+                        - **DeEcho DeReverb**: Skillfully eliminates reverb from vocal tracks, enhancing the clarity of your sound.
+                        - **MDX23C InstVoc**: Excellent at removing sound effects or other annoying noises, ensuring a smooth listening experience.
+                        - **DeNoise**: Exceptional at detecting and removing nearly imperceptible noises that can compromise the quality of a cover or a model.
+                        """
+                    )
+                )
+
+                uvr_handler = UVRHANDLER()
+                with gr.Row():
+                    audios = gr.File()
+                    output_dir = gr.Textbox('opt/', label='Output Directory')
+                    model_name = gr.Dropdown(choices=uvr5_names)
+                    model_status = gr.Textbox(placeholder='Waiting...', interactive=False, label='Model Information')
+                
+                with gr.Row():
+                    LOADMODELBUTTON = gr.Button('Load Model')
+                    LOADMODELBUTTON.click(
+                        fn=uvr_handler.loadmodel,
+                        inputs=[model_name, output_dir],
+                        outputs=[model_status]
+                    )
+                    CLEARMODELBUTTON = gr.Button('Unload Model')
+                    CLEARMODELBUTTON.click(
+                        fn=uvr_handler.deloadmodel,
+                        outputs=[model_status]
+                    )
+
+                with gr.Column():
+                    with gr.Row():
+                        inst = gr.Audio(show_download_button=True, interactive=False, label='Instrumental')
+                        vocal = gr.Audio(show_download_button=True, interactive=False, label='Vocals')
+                    UVRBUTTON = gr.Button('Extract')
+                    UVRBUTTON.click(
+                        fn=uvr_handler.uvr,
+                        inputs=[audios],
+                        outputs=[inst, vocal]
+                    )
+
         with gr.TabItem(i18n("Extra")):
                 with gr.Accordion('Model Info', open=False):
                     with gr.Column():
@@ -1509,7 +1571,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                             outputs=[sid1, file_index2],
                             api_name="infer_refresh",
                             )
-                        modelload_out = gr.Textbox(label="Model Metadata")
+                        modelload_out = gr.Textbox(label="Model Metadata", interactive=False, lines=4)
                         get_model_info_button = gr.Button(i18n("Get Model Info"))
                         get_model_info_button.click(
                          fn=vc.get_vc, 
@@ -1568,6 +1630,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 - **kitlemonfoot**: Ilaria TTS implementation
                 - **eddycrack864**: UVR5 implementation
                 - **Diablo**: Bug Fixes, UI help.
+                - **Mikus**: Ilaria Updater & Downloader
                                 
                 ### Beta Tester
                 
@@ -1585,7 +1648,6 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 
                 - **RVC Project**: Original Developers
                 - **yumereborn**: Ilaria RVC image
-                - **Mikus**: Ilaria Updater & Downloader
                                 
                 ### **In loving memory of JLabDX** 🕊️
                 ''')
