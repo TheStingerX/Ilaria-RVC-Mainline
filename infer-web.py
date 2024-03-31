@@ -187,7 +187,20 @@ pretrained_G_files = get_pretrained_files(pretrained_directory, "G", "f0")
 pretrained_D_files = get_pretrained_files(pretrained_directory, "D", "f0")
 
 def get_pretrained_models(path_str, f0_str, sr2):
-    sr_mapping = pretrain_helper.get_pretrained_models(f0_str)
+    sr_mapping = {
+        "32k": f"{f0_str}G32k.pth",
+        "40k": f"{f0_str}G40k.pth",
+        "48k": f"{f0_str}G48k.pth",
+        "OV2-32k": f"{f0_str}OV2-32k_G.pth",
+        "OV2-40k": f"{f0_str}OV2-40k_G.pth",
+        "RIN-40k": f"{f0_str}RIN-40k_G.pth",
+        "Snowie-40k": f"{f0_str}Snowie-40k_G.pth",
+        "Snowie-48k": f"{f0_str}Snowie-48k_G.pth",
+        "SnowieV3.1-40k": f"{f0_str}SnowieV3.1-40k_G.pth", 
+        "SnowieV3.1-32k": f"{f0_str}SnowieV3.1-32k_G.pth",
+        "SnowieV3.1-48k": f"{f0_str}SnowieV3.1-48k_G.pth",
+        "SnowieV3.1-RinE3-40K": f"{f0_str}SnowieV3.1-X-RinE3-40k_G.pth"
+    }
 
     pretrained_G_filename = sr_mapping.get(sr2, "")
     pretrained_D_filename = pretrained_G_filename.replace("G", "D")
@@ -757,9 +770,9 @@ def click_train(
     if pretrained_D15 == "":
         logger.info("No pretrained Discriminator")
     if version19 == "v1" or sr2 == "40k":
-        config_path = "configs/v1/%s.json" % sr2
+        config_path = "v1/%s.json" % sr2
     else:
-        config_path = "configs/v2/%s.json" % sr2
+        config_path = "v2/%s.json" % sr2
     config_save_path = os.path.join(exp_dir, "config.json")
     if not pathlib.Path(config_save_path).exists():
         with open(config_save_path, "w", encoding="utf-8") as f:
@@ -1630,7 +1643,8 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 - **kitlemonfoot**: Ilaria TTS implementation
                 - **eddycrack864**: UVR5 implementation
                 - **Diablo**: Bug Fixes, UI help.
-                - **Mikus**: Ilaria Updater & Downloader
+                - **Mikus**: Ilaria Updater & Downloader  
+                - **Mitsubachi1**: Bug Fixes, UI help
                                 
                 ### Beta Tester
                 
