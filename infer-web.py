@@ -199,7 +199,7 @@ def get_pretrained_models(path_str, f0_str, sr2):
         "SnowieV3.1-40k": f"{f0_str}SnowieV3.1-40k_G.pth", 
         "SnowieV3.1-32k": f"{f0_str}SnowieV3.1-32k_G.pth",
         "SnowieV3.1-48k": f"{f0_str}SnowieV3.1-48k_G.pth",
-        "SnowieV3.1-RinE3-40K": f"{f0_str}SnowieV3.1-RinE3-40K_G"
+        "SnowieV3.1-RinE3-40K": f"{f0_str}SnowieV3.1-X-RinE3-40k_G.pth"
     }
 
     pretrained_G_filename = sr_mapping.get(sr2, "")

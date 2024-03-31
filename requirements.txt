@@ -42,10 +42,11 @@ onnxruntime; sys_platform == 'darwin'
 onnxruntime-gpu; sys_platform != 'darwin'
 torchcrepe==0.0.20
 fastapi==0.88
-ffmpy==0.3.1
 python-dotenv>=1.0.0
 av
 edge-tts
 pydub
 torchfcpe
 audio-separator
+audio-separator[gpu]
+ffmpy==0.3.1
