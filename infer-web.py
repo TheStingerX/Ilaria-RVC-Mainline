@@ -168,7 +168,7 @@ def get_pretrained_models(path_str, f0_str, sr2):
         "OV2-40k": "f0Ov2Super40kG.pth",
         "RIN-40k": "f0RIN_E3_G40k.pth",
         "Snowie-40k": "G_Snowie_RuPretrain_EnP.pth",
-        "Snowie-48k": "G_Snowie_Rupretrain_48k_V1.2.pth",
+        "Snowie-48k": "G_Snowie_Rupretrain_48k_V1.2.pth2",
         "SnowieV3.1-40k": "G_SnowieV3.1_40k.pth", 
         "SnowieV3.1-32k": "G_SnowieV3.1_32k.pth",
         "SnowieV3.1-48k": "G_SnowieV3.1_48k.pth",
@@ -192,7 +192,6 @@ for root, dirs, files in os.walk(index_root, topdown=False):
     for name in files:
         if name.endswith(".index") and "trained" not in name:
             index_paths.append("%s/%s" % (root, name))
-
 
 def generate_spectrogram(audio_data, sample_rate, file_name):
     plt.clf()
@@ -255,12 +254,10 @@ def change_choices():
         for name in files:
             if name.endswith(".index") and "trained" not in name:
                 index_paths.append("%s/%s" % (root, name))
-    audios = [os.path.join(audio_root, file) for file in os.listdir(os.path.join(now_dir, "audios"))]
-
-    return {"choices": sorted(names), "__type__": "update"}, {"choices": sorted(index_paths),"__type__": "update"},{
-        "choices": sorted(audios), "__type__": "update"
+    return {"choices": sorted(names), "__type__": "update"}, {
+        "choices": sorted(index_paths),
+        "__type__": "update",
     }
-
 
 
 # Define the tts_and_convert function
@@ -276,7 +273,7 @@ def tts_and_convert(ttsvoice, text, spk_item, vc_transform, f0_file, f0method, f
 
     #Calls vc similar to any other inference.
     #This is why we needed all the other shit in our call, otherwise we couldn't infer.
-    return vc.vc_single(spk_item , None,aud_path, vc_transform, f0_file, f0method, file_index1, file_index2, index_rate, filter_radius, resample_sr, rms_mix_rate, protect)
+    return vc.vc_single(spk_item ,aud_path, None, vc_transform, f0_file, f0method, file_index1, file_index2, index_rate, filter_radius, resample_sr, rms_mix_rate, protect)
 
 
 def import_files(file):
@@ -906,8 +903,8 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 vc_transform0 = gr.inputs.Slider(
                                 label=i18n(
                                     "Pitch: 0 from man to man (or woman to woman); 12 from man to woman and -12 from woman to man."),
-                                minimum=-24,
-                                maximum=24,
+                                minimum=-12,
+                                maximum=12,
                                 default=0,
                                 step=1,
                 )
@@ -918,14 +915,14 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 with gr.Group():
                     with gr.Row():
                         with gr.Column():                                
-                                input_audio0 = gr.Audio(
-                                    label=i18n("Upload Audio file"),
+                                input_audio1 = gr.Audio(
+                                    label=i18n("Or you can upload Audio file"),
                                     type="filepath",
                                 )
                                 record_button = gr.Audio(source="microphone", label="Use your microphone",
                                                          type="filepath")
                                 
-                                input_audio1 = gr.Dropdown(
+                                input_audio0 = gr.Dropdown(
                                     label=i18n("Select a file from the audio folder"),
                                     choices=sorted(audio_paths),
                                     value='',
@@ -1006,7 +1003,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                                     refresh_button.click(
                                         fn=change_choices,
                                         inputs=[],
-                                        outputs=[sid0, file_index2, input_audio1],
+                                        outputs=[sid0, file_index2],
                                         api_name="infer_refresh",
                                     )
                                     file_index1 = gr.Textbox(
@@ -1456,7 +1453,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                  but2 = gr.Button(i18n("2. Feature Extraction"), variant="primary")
                  but4 = gr.Button(i18n("3. Train Index"), variant="primary")
                  but3 = gr.Button(i18n("4. Train Model"), variant="primary")
-                 info = gr.Textbox(label=i18n("Output"), value="", max_lines=5, lines=5)
+                 info = gr.Textbox(label=i18n("Output"), value="", max_lines=10)
                  but1.click(
                     preprocess_dataset,
                         [trainset_dir4, exp_dir1, sr2, np7],
@@ -1512,7 +1509,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                             outputs=[sid1, file_index2],
                             api_name="infer_refresh",
                             )
-                        modelload_out = gr.Textbox(label="Model Metadata", interactive=False, lines=4)
+                        modelload_out = gr.Textbox(label="Model Metadata")
                         get_model_info_button = gr.Button(i18n("Get Model Info"))
                         get_model_info_button.click(
                          fn=vc.get_vc, 
