@@ -32,7 +32,7 @@ import matplotlib.pyplot as plt
 import soundfile as sf
 from dotenv import load_dotenv
 from tools import pretrain_helper
-
+import librosa.display
 import edge_tts, asyncio
 from infer.modules.vc.ilariatts import tts_order_voice
 language_dict = tts_order_voice
@@ -220,45 +220,33 @@ for root, dirs, files in os.walk(index_root, topdown=False):
         if name.endswith(".index") and "trained" not in name:
             index_paths.append("%s/%s" % (root, name))
 
+def download_file(url):
+    file_id = url.split('/')[-2]
+    download_url = f'https://docs.google.com/uc?export=download&id={file_id}'
+    response = requests.get(download_url, allow_redirects=True)
+    local_filename = url.split('/')[-1] + '.wav'
+    open(local_filename, 'wb').write(response.content)
+    return local_filename
 
-def generate_spectrogram(audio_data, sample_rate, file_name):
+def create_spectrogram_and_get_info(audio_file):
     plt.clf()
-
-    plt.specgram(
-        audio_data,
-        Fs=sample_rate / 1,
-        NFFT=4096,
-        sides="onesided",
-        cmap="Reds_r",
-        scale_by_freq=True,
-        scale="dB",
-        mode="magnitude",
-        window=np.hanning(4096),
-    )
-
-    plt.title(file_name)
-    plt.savefig("spectrogram.png")
-
-
-def get_audio_info(audio_file):
-    audio_data, sample_rate = sf.read(audio_file)
-
-    if len(audio_data.shape) > 1:
-        audio_data = np.mean(audio_data, axis=1)
-
-    generate_spectrogram(audio_data, sample_rate, os.path.basename(audio_file))
-
+    y, sr = librosa.load(audio_file, sr=None)
+    S = librosa.feature.melspectrogram(y, sr=sr, n_mels=256)
+    log_S = librosa.amplitude_to_db(S, ref=np.max, top_db=256)
+    plt.figure(figsize=(12, 5.5))
+    librosa.display.specshow(log_S, sr=sr, x_axis='time')
+    plt.colorbar(format='%+2.0f dB', pad=0.01)
+    plt.tight_layout(pad=0.5)
+    plt.savefig('spectrogram.png', dpi=500)
     audio_info = sf.info(audio_file)
-    bit_depth = {"PCM_16": 16, "FLOAT": 32}.get(audio_info.subtype, 0)
-
+    bit_depth = {'PCM_16': 16, 'FLOAT': 32}.get(audio_info.subtype, 0)
     minutes, seconds = divmod(audio_info.duration, 60)
     seconds, milliseconds = divmod(seconds, 1)
     milliseconds *= 1000
-
+    # bitrate = audio_info.samplerate * audio_info.channels * bit_depth / 8 / 1024 / 1024
+    # this bitrate one doesnt seem to be used anywhere so i just removed it
     speed_in_kbps = audio_info.samplerate * bit_depth / 1000
-    # Create a table with the audio file info
     filename_without_extension, _ = os.path.splitext(os.path.basename(audio_file))
-
     info_table = f"""
     | Information | Value |
     | :---: | :---: |
@@ -269,9 +257,7 @@ def get_audio_info(audio_file):
     | Samples per second | {audio_info.samplerate} Hz |
     | Bit per second | {audio_info.samplerate * audio_info.channels * bit_depth} bit/s |
     """
-
     return info_table, "spectrogram.png"
-
 def change_choices():
     names = []
     for name in os.listdir(weight_root):
@@ -1528,6 +1514,19 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                  )
                  but4.click(train_index, [exp_dir1, version19], info)
         
+
+
+        with gr.TabItem(i18n("Extra")):
+                with gr.Accordion('Model Info', open=False):
+                    with gr.Column():
+                        sid1 = gr.Dropdown(label=i18n("Voice Model"), choices=sorted(names))
+                        refresh_button = gr.Button(i18n("Refresh"), variant="primary")
+                        refresh_button.click(
+                         fn=change_choices,
+                            inputs=[],
+                            outputs=[sid1, file_index2],
+                            api_name="infer_refresh",
+                            )
         with gr.TabItem(i18n("UVR5")):
             with gr.Group():
                 gr.Markdown(
@@ -1548,7 +1547,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     output_dir = gr.Textbox('opt/', label='Output Directory')
                     model_name = gr.Dropdown(choices=uvr5_names)
                     model_status = gr.Textbox(placeholder='Waiting...', interactive=False, label='Model Information')
-                
+
                 with gr.Row():
                     LOADMODELBUTTON = gr.Button('Load Model')
                     LOADMODELBUTTON.click(
@@ -1561,7 +1560,8 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         fn=uvr_handler.deloadmodel,
                         outputs=[model_status]
                     )
-
+ 
+ 
                 with gr.Column():
                     with gr.Row():
                         inst = gr.Audio(show_download_button=True, interactive=False, label='Instrumental')
@@ -1572,18 +1572,6 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         inputs=[audios],
                         outputs=[inst, vocal]
                     )
-
-        with gr.TabItem(i18n("Extra")):
-                with gr.Accordion('Model Info', open=False):
-                    with gr.Column():
-                        sid1 = gr.Dropdown(label=i18n("Voice Model"), choices=sorted(names))
-                        refresh_button = gr.Button(i18n("Refresh"), variant="primary")
-                        refresh_button.click(
-                         fn=change_choices,
-                            inputs=[],
-                            outputs=[sid1, file_index2],
-                            api_name="infer_refresh",
-                            )
                         modelload_out = gr.Textbox(label="Model Metadata", interactive=False, lines=4)
                         get_model_info_button = gr.Button(i18n("Get Model Info"))
                         get_model_info_button.click(
@@ -1603,20 +1591,41 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     with gr.Column():
                         with gr.Row():
                             with gr.Column():
-                                gr.Markdown(
-                                    value=i18n("Information about the audio file"),
-                                    visible=True,
-                                )
-                                output_markdown = gr.Markdown(
-                                    value=i18n("Waiting for information..."), visible=True
-                                )
-                            image_output = gr.Image(type="filepath", interactive=False)
+                                 gr.Markdown(
+                                             """
+                                             <h1><center>Audio Analyzer by Ilaria</center></h1>\n
+                                             <h3><center>Help me on <a href="https://ko-fi.com/ilariaowo/shop">Ko-Fi</a>!</center></h3>\n
+                                             ## Special thanks to Alex Murkoff for helping me code it!
+                                             #### Need help with AI? Join [AI Hub](https://discord.gg/aihub)!\n
+                                             **Note**: Try to keep the audio length under **2 minutes**,
+                                             since long audio files dont work well with a static spectrogram
+                                             """
+                                         )
+                                 with gr.Row():
+                                   image_output = gr.Image(type='filepath', interactive=False)
 
-                    get_info_button.click(
-                        fn=get_audio_info,
-                        inputs=[audio_input],
-                        outputs=[output_markdown, image_output],
-                    )
+                                 with gr.Row():
+                                   with gr.Column():
+                                      audio_input = gr.Audio(type='filepath')
+                                      create_spec_butt = gr.Button(value='Create Spectrogram And Get Info', variant='primary')
+
+                                   with gr.Column():
+                                      output_markdown = gr.Markdown(value="", visible=True)
+
+                                      with gr.Accordion('Audio Downloader', open=False):
+                                          url_input = gr.Textbox(value='', label='Google Drive Audio URL')
+                                          download_butt = gr.Button(value='Download audio', variant='primary')
+
+                                      download_butt.click(fn=download_file, inputs=[url_input], outputs=[audio_input])
+                                      create_spec_butt.click(fn=create_spectrogram_and_get_info, inputs=[audio_input],
+                                       outputs=[output_markdown, image_output])
+
+                                   download_butt.click(fn=download_file, inputs=[url_input], outputs=[audio_input])
+                                   create_spec_butt.click(fn=create_spectrogram_and_get_info, inputs=[audio_input],
+                                   outputs=[output_markdown, image_output])
+
+
+
 
                 with gr.Accordion('Training Helper', open=False):
                     with gr.Column():
