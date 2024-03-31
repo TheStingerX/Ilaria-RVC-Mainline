@@ -53,3 +53,4 @@ av
 PySimpleGUI
 sounddevice
 torchfcpe
+audio-separator
