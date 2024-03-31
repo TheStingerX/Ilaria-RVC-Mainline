@@ -48,3 +48,4 @@ av
 edge-tts
 pydub
 torchfcpe
+audio-separator
