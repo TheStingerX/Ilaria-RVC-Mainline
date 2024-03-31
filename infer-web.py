@@ -168,7 +168,7 @@ def get_pretrained_models(path_str, f0_str, sr2):
         "OV2-40k": "f0Ov2Super40kG.pth",
         "RIN-40k": "f0RIN_E3_G40k.pth",
         "Snowie-40k": "G_Snowie_RuPretrain_EnP.pth",
-        "Snowie-48k": "G_Snowie_Rupretrain_48k_V1.2.pth2",
+        "Snowie-48k": "G_Snowie_Rupretrain_48k_V1.2.pth",
         "SnowieV3.1-40k": "G_SnowieV3.1_40k.pth", 
         "SnowieV3.1-32k": "G_SnowieV3.1_32k.pth",
         "SnowieV3.1-48k": "G_SnowieV3.1_48k.pth",
