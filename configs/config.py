@@ -26,6 +26,14 @@ version_config_list = [
     "v1/48k.json",
     "v2/48k.json",
     "v2/32k.json",
+    "v2/OV2-32k.json",
+    "v2/OV2-40k.json",
+    "v2/Snowie-40k.json",
+    "v2/Snowie-48k.json",
+    "v2/SnowieV3.1-32k.json",
+    "v2/SnowieV3.1-40k.json",
+    "v2/SnowieV3.1-48k.json",
+    "v2/SnowieV3.1-RinE3-40k.json"
 ]
 
 

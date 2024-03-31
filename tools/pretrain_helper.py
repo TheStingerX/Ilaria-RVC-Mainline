@@ -47,7 +47,7 @@ def download_file(url, filename, current_file, total_files):
             if not os.path.exists(directory):
                 os.makedirs(directory)
             
-            filepath = os.path.join(directory, filename)
+            filepath = os.path.join(directory, "f0"+filename)
             
             with open(filepath, 'wb') as f:
                 total_length = int(response.headers.get('content-length'))
