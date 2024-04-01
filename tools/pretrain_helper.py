@@ -72,7 +72,7 @@ def get_pretrained_models(f0_str):
             nahidwin = {"32k": f"{f0_str}G32k.pth", "40k": f"{f0_str}G40k.pth", "48k": f"{f0_str}G48k.pth",}
             for i in list(pretrains_data.keys()):
                 ihatemyselfyuh = pretrains_data[i]['G']
-                nahidwin[i] = ihatemyselfyuh.split('/')[-1]
+                nahidwin[i] = f0_str+ihatemyselfyuh.split('/')[-1]
             return nahidwin
     except:
         # fallback lol
