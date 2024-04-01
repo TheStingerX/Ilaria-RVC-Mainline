@@ -455,6 +455,14 @@ def download_from_url(url, model):
     except Exception as e:
         return f"ERROR - The test failed: {str(e)}"
 
+def transfer_files(filething, dataset_dir='dataset/'):
+    file_names = [f.name for f in filething]
+    for f in file_names:
+        filename = os.path.basename(f)
+        destination = os.path.join(dataset_dir, filename)
+        shutil.copyfile(f, destination)
+    return "Transferred files to dataset directory!"
+
 def if_done_multi(done, ps):
     while 1:
         flag = 1
@@ -917,7 +925,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     clean_button = gr.Button(i18n("Unload Voice from VRAM"), variant="primary")
                 vc_transform0 = gr.inputs.Slider(
                                 label=i18n(
-                                    "Pitch: 0 from man to man (or woman to woman); 12 from man to woman and -12 from woman to man."),
+                                    "Pitch: -24 is lower (2 octaves) and 24 is higher (2 octaves)"),
                                 minimum=-24,
                                 maximum=24,
                                 default=0,
@@ -1330,6 +1338,15 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     trainset_dir4 = gr.Textbox(
                         label=i18n("Path to Dataset"), value="dataset"
                     )
+                    with gr.Accordion('Upload Dataset (alternative)', open=False, visible=True):
+                        file_thin = gr.Files(label='Dataset') # transfers files to the dataset dir, lol
+                        show = gr.Textbox(label='Status')
+                        transfer_button = gr.Button('Move Dataset to the dataset folder :)', variant="primary")
+                        transfer_button.click(
+                            fn=transfer_files,
+                            inputs=[file_thin],
+                            outputs=show,
+                        )
 
             with gr.Group():
                 gr.Markdown(value=i18n(""))
@@ -1535,13 +1552,13 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     model_status = gr.Textbox(placeholder='Waiting...', interactive=False, label='Model Information')
                 
                 with gr.Row():
-                    LOADMODELBUTTON = gr.Button('Load Model')
+                    LOADMODELBUTTON = gr.Button('Load Model', variant="primary")
                     LOADMODELBUTTON.click(
                         fn=uvr_handler.loadmodel,
                         inputs=[model_name, output_dir],
                         outputs=[model_status]
                     )
-                    CLEARMODELBUTTON = gr.Button('Unload Model')
+                    CLEARMODELBUTTON = gr.Button('Unload Model', variant="primary")
                     CLEARMODELBUTTON.click(
                         fn=uvr_handler.deloadmodel,
                         outputs=[model_status]
@@ -1551,7 +1568,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     with gr.Row():
                         inst = gr.Audio(show_download_button=True, interactive=False, label='Instrumental')
                         vocal = gr.Audio(show_download_button=True, interactive=False, label='Vocals')
-                    UVRBUTTON = gr.Button('Extract')
+                    UVRBUTTON = gr.Button('Extract', variant="primary")
                     UVRBUTTON.click(
                         fn=uvr_handler.uvr,
                         inputs=[audios],
