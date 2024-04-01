@@ -9,7 +9,6 @@ sys.path.append(now_dir)
 load_dotenv()
 from infer.modules.vc.modules import VC
 from infer.modules.uvr5.modules import UVRHANDLER
-import librosa.display
 from i18n.i18n import I18nAuto
 from configs.config import Config
 from sklearn.cluster import MiniBatchKMeans
@@ -18,6 +17,8 @@ import numpy as np
 import gradio as gr
 import faiss
 import fairseq
+import librosa
+import librosa.display
 import pathlib
 import json
 from pydub import AudioSegment
@@ -221,35 +222,27 @@ for root, dirs, files in os.walk(index_root, topdown=False):
         if name.endswith(".index") and "trained" not in name:
             index_paths.append("%s/%s" % (root, name))
 
-
-def download_file(url):
-    file_id = url.split('/')[-2]
-    download_url = f'https://docs.google.com/uc?export=download&id={file_id}'
-    response = requests.get(download_url, allow_redirects=True)
-    local_filename = url.split('/')[-1] + '.wav'
-    open(local_filename, 'wb').write(response.content)
-    return local_filename
-
-def create_spectrogram_and_get_info(audio_file):
-    plt.clf()
-
+def generate_spectrogram_and_get_info(audio_file):
     y, sr = librosa.load(audio_file, sr=None)
-    S = librosa.feature.melspectrogram(y, sr=sr, n_mels=256)
+
+    S = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=256)
     log_S = librosa.amplitude_to_db(S, ref=np.max, top_db=256)
+
     plt.figure(figsize=(12, 5.5))
     librosa.display.specshow(log_S, sr=sr, x_axis='time')
     plt.colorbar(format='%+2.0f dB', pad=0.01)
     plt.tight_layout(pad=0.5)
+
     plt.savefig('spectrogram.png', dpi=500)
+
     audio_info = sf.info(audio_file)
     bit_depth = {'PCM_16': 16, 'FLOAT': 32}.get(audio_info.subtype, 0)
     minutes, seconds = divmod(audio_info.duration, 60)
     seconds, milliseconds = divmod(seconds, 1)
     milliseconds *= 1000
-    # bitrate = audio_info.samplerate * audio_info.channels * bit_depth / 8 / 1024 / 1024
-    # this bitrate one doesnt seem to be used anywhere so i just removed it
     speed_in_kbps = audio_info.samplerate * bit_depth / 1000
     filename_without_extension, _ = os.path.splitext(os.path.basename(audio_file))
+
     info_table = f"""
     | Information | Value |
     | :---: | :---: |
@@ -261,8 +254,8 @@ def create_spectrogram_and_get_info(audio_file):
     | Bit per second | {audio_info.samplerate * audio_info.channels * bit_depth} bit/s |
     """
 
-    # Return the PNG file of the spectrogram and the info table
-    return info_table, 'spectrogram.png'
+    return info_table, "spectrogram.png"
+
 
 def change_choices():
     names = []
@@ -1583,45 +1576,32 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                          inputs=[sid1, protect0, protect1],
                          outputs=[spk_item, protect0, protect1, file_index2, file_index4, modelload_out]
                         )
-    
+                
                         
-                with gr.Accordion('Audio Analyser', open=False):	                				
+                with gr.Accordion('Audio Analyser', open=False):
+                    with gr.Column():
+                        audio_input = gr.Audio(type="filepath")
+                        get_info_button = gr.Button(
+                            value=i18n("Get information about the audio"), variant="primary"
+                        )
+				                				
                     with gr.Column():
                         with gr.Row():
                             with gr.Column():
-                                 gr.Markdown(
-                                             """
-                                             <h1><center>Audio Analyzer by Ilaria</center></h1>\n
-                                             <h3><center>Help me on <a href="https://ko-fi.com/ilariaowo/shop">Ko-Fi</a>!</center></h3>\n
-                                             ## Special thanks to Alex Murkoff for helping me code it!
-                                             #### Need help with AI? Join [AI Hub](https://discord.gg/aihub)!\n
-                                             **Note**: Try to keep the audio length under **2 minutes**,
-                                             since long audio files dont work well with a static spectrogram
-                                             """
-                                         )
-                                 with gr.Row():
-                                   image_output = gr.Image(type='filepath', interactive=False)
+                                gr.Markdown(
+                                    value=i18n("Information about the audio file"),
+                                    visible=True,
+                                )
+                                output_markdown = gr.Markdown(
+                                    value=i18n("Waiting for information..."), visible=True
+                                )
+                            image_output = gr.Image(type="filepath", interactive=False)
 
-                                 with gr.Row():
-                                   with gr.Column():
-                                      audio_input = gr.Audio(type='filepath')
-                                      create_spec_butt = gr.Button(value='Create Spectrogram And Get Info', variant='primary')
-
-                                   with gr.Column():
-                                      output_markdown = gr.Markdown(value="", visible=True)
-
-                                      with gr.Accordion('Audio Downloader', open=False):
-                                          url_input = gr.Textbox(value='', label='Google Drive Audio URL')
-                                          download_butt = gr.Button(value='Download audio', variant='primary')
-
-                                      download_butt.click(fn=download_file, inputs=[url_input], outputs=[audio_input])
-                                      create_spec_butt.click(fn=create_spectrogram_and_get_info, inputs=[audio_input],
-                                       outputs=[output_markdown, image_output])
-
-                                   download_butt.click(fn=download_file, inputs=[url_input], outputs=[audio_input])
-                                   create_spec_butt.click(fn=create_spectrogram_and_get_info, inputs=[audio_input],
-                                   outputs=[output_markdown, image_output])
-
+                    get_info_button.click(
+                        fn=generate_spectrogram_and_get_info,
+                        inputs=[audio_input],
+                        outputs=[output_markdown, image_output],
+                    )
 
                 with gr.Accordion('Training Helper', open=False):
                     with gr.Column():
