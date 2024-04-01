@@ -17,6 +17,8 @@ import numpy as np
 import gradio as gr
 import faiss
 import fairseq
+import librosa
+import librosa.display
 import pathlib
 import json
 from pydub import AudioSegment
@@ -220,43 +222,25 @@ for root, dirs, files in os.walk(index_root, topdown=False):
         if name.endswith(".index") and "trained" not in name:
             index_paths.append("%s/%s" % (root, name))
 
+def generate_spectrogram_and_get_info(audio_file):
+    y, sr = librosa.load(audio_file, sr=None)
 
-def generate_spectrogram(audio_data, sample_rate, file_name):
-    plt.clf()
+    S = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=256)
+    log_S = librosa.amplitude_to_db(S, ref=np.max, top_db=256)
 
-    plt.specgram(
-        audio_data,
-        Fs=sample_rate / 1,
-        NFFT=4096,
-        sides="onesided",
-        cmap="Reds_r",
-        scale_by_freq=True,
-        scale="dB",
-        mode="magnitude",
-        window=np.hanning(4096),
-    )
+    plt.figure(figsize=(12, 5.5))
+    librosa.display.specshow(log_S, sr=sr, x_axis='time')
+    plt.colorbar(format='%+2.0f dB', pad=0.01)
+    plt.tight_layout(pad=0.5)
 
-    plt.title(file_name)
-    plt.savefig("spectrogram.png")
-
-
-def get_audio_info(audio_file):
-    audio_data, sample_rate = sf.read(audio_file)
-
-    if len(audio_data.shape) > 1:
-        audio_data = np.mean(audio_data, axis=1)
-
-    generate_spectrogram(audio_data, sample_rate, os.path.basename(audio_file))
+    plt.savefig('spectrogram.png', dpi=500)
 
     audio_info = sf.info(audio_file)
-    bit_depth = {"PCM_16": 16, "FLOAT": 32}.get(audio_info.subtype, 0)
-
+    bit_depth = {'PCM_16': 16, 'FLOAT': 32}.get(audio_info.subtype, 0)
     minutes, seconds = divmod(audio_info.duration, 60)
     seconds, milliseconds = divmod(seconds, 1)
     milliseconds *= 1000
-
     speed_in_kbps = audio_info.samplerate * bit_depth / 1000
-    # Create a table with the audio file info
     filename_without_extension, _ = os.path.splitext(os.path.basename(audio_file))
 
     info_table = f"""
@@ -271,6 +255,7 @@ def get_audio_info(audio_file):
     """
 
     return info_table, "spectrogram.png"
+
 
 def change_choices():
     names = []
@@ -1613,7 +1598,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                             image_output = gr.Image(type="filepath", interactive=False)
 
                     get_info_button.click(
-                        fn=get_audio_info,
+                        fn=generate_spectrogram_and_get_info,
                         inputs=[audio_input],
                         outputs=[output_markdown, image_output],
                     )
