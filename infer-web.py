@@ -1595,7 +1595,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                                 output_markdown = gr.Markdown(
                                     value=i18n("Waiting for information..."), visible=True
                                 )
-                            image_output = gr.Image(type="filepath", interactive=False)
+                                image_output = gr.Image(type="filepath", interactive=False)
 
                     get_info_button.click(
                         fn=generate_spectrogram_and_get_info,
