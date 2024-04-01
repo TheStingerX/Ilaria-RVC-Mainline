@@ -189,20 +189,7 @@ pretrained_G_files = get_pretrained_files(pretrained_directory, "G", "f0")
 pretrained_D_files = get_pretrained_files(pretrained_directory, "D", "f0")
 
 def get_pretrained_models(path_str, f0_str, sr2):
-    sr_mapping = {
-        "32k": f"{f0_str}G32k.pth",
-        "40k": f"{f0_str}G40k.pth",
-        "48k": f"{f0_str}G48k.pth",
-        "OV2-32k": f"{f0_str}OV2-32k_G.pth",
-        "OV2-40k": f"{f0_str}OV2-40k_G.pth",
-        "RIN-40k": f"{f0_str}RIN-40k_G.pth",
-        "Snowie-40k": f"{f0_str}Snowie-40k_G.pth",
-        "Snowie-48k": f"{f0_str}Snowie-48k_G.pth",
-        "SnowieV3.1-40k": f"{f0_str}SnowieV3.1-40k_G.pth", 
-        "SnowieV3.1-32k": f"{f0_str}SnowieV3.1-32k_G.pth",
-        "SnowieV3.1-48k": f"{f0_str}SnowieV3.1-48k_G.pth",
-        "SnowieV3.1-RinE3-40K": f"{f0_str}SnowieV3.1-X-RinE3-40k_G.pth"
-    }
+    sr_mapping = pretrain_helper.get_pretrained_models(f0_str)
 
     pretrained_G_filename = sr_mapping.get(sr2, "")
     pretrained_D_filename = pretrained_G_filename.replace("G", "D")
