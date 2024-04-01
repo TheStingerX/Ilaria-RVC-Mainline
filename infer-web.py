@@ -1339,9 +1339,9 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                         label=i18n("Path to Dataset"), value="dataset"
                     )
                     with gr.Accordion('Upload Dataset (alternative)', open=False, visible=True):
-                        file_thin = gr.Files(label='Dataset') # transfers files to the dataset dir, lol
+                        file_thin = gr.Files(label='Dataset') # transfers files to the dataset dir, lol # much coding -ila
                         show = gr.Textbox(label='Status')
-                        transfer_button = gr.Button('Move Dataset to the dataset folder :)', variant="primary")
+                        transfer_button = gr.Button('Upload Dataset to the folder', variant="primary")
                         transfer_button.click(
                             fn=transfer_files,
                             inputs=[file_thin],
