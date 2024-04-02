@@ -34,5 +34,9 @@
   "SnowieV3.1-X-RinE3-40k": {
     "D": "https://huggingface.co/MUSTAR/SnowieV3.1-X-RinE3-40K/resolve/main/D_Snowie-X-Rin_40k.pth",
     "G": "https://huggingface.co/MUSTAR/SnowieV3.1-X-RinE3-40K/resolve/main/G_Snowie-X-Rin_40k.pth"
+  },
+  "Itaila-32k": {
+    "D": "https://huggingface.co/TheStinger/itaila/resolve/main/ItaIla_32k_D.pth",
+    "G": "https://huggingface.co/TheStinger/itaila/resolve/main/ItaIla_32k_G.pth"
   }
 }
