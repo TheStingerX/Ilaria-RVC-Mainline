@@ -1467,55 +1467,69 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 )
             
             with gr.Group():
-                with gr.Row():
-                 but1 = gr.Button(i18n("1. Process Data"), variant="primary")
-                 but2 = gr.Button(i18n("2. Feature Extraction"), variant="primary")
-                 but4 = gr.Button(i18n("3. Train Index"), variant="primary")
-                 but3 = gr.Button(i18n("4. Train Model"), variant="primary")
-                 info = gr.Textbox(label=i18n("Output"), value="", max_lines=5, lines=5)
-                 but1.click(
-                    preprocess_dataset,
-                        [trainset_dir4, exp_dir1, sr2, np7],
-                        [info],
-                        api_name="train_preprocess",
-                     )
-                 but2.click(
-                    extract_f0_feature,
-                        [
-                            gpus6,
-                            np7,
-                            f0method8,
-                            if_f0_3,
-                            exp_dir1,
-                            version19,
-                            gpus_rmvpe,
-                        ],
-                        [info],
-                        api_name="train_extract_f0_feature",
-                 )
-                 but4.click(train_index, [exp_dir1, version19], info)
-                 but3.click(
-                    click_train,
-                    [
-                        exp_dir1,
-                        sr2,
-                        if_f0_3,
-                        spk_id5,
-                        save_epoch10,
-                        total_epoch11,
-                        batch_size12,
-                        if_save_latest13,
-                        pretrained_G14,
-                        pretrained_D15,
-                        gpus16,
-                        if_cache_gpu17,
-                        if_save_every_weights18,
-                        version19,
-                    ],
-                    info,
-                    api_name="train_start",
-                 )
-                 but4.click(train_index, [exp_dir1, version19], info)
+                def one_click_train(trainset_dir4, exp_dir1, sr2, gpus6, np7, f0method8, if_f0_3, version19, gpus_rmvpe):
+                    preprocess_dataset(trainset_dir4, exp_dir1, sr2, np7)
+                    extract_f0_feature(gpus6, np7, f0method8, if_f0_3, exp_dir1, version19, gpus_rmvpe)
+                    train_index(exp_dir1, version19)
+                    click_train(exp_dir1, sr2, if_f0_3, spk_id5, save_epoch10, total_epoch11, batch_size12, if_save_latest13, 
+                                pretrained_G14, pretrained_D15, gpus16, if_cache_gpu17, if_save_every_weights18, version19)
+
+                    with gr.TabItem("One-Click Training"):
+                        but5 = gr.Button('Train', variant="primary")
+                        but5.click(
+                            one_click_train,
+                            [trainset_dir4, exp_dir1, sr2, gpus6, np7, f0method8, if_f0_3, version19, gpus_rmvpe]
+                        )
+
+                    with gr.TabItem("Manual Training"):
+                        but1 = gr.Button(i18n("1. Process Data"), variant="primary")
+                        but2 = gr.Button(i18n("2. Feature Extraction"), variant="primary")
+                        but4 = gr.Button(i18n("3. Train Index"), variant="primary")
+                        but3 = gr.Button(i18n("4. Train Model"), variant="primary")
+                        info = gr.Textbox(label=i18n("Output"), value="", max_lines=5, lines=5)
+                        but1.click(
+                            preprocess_dataset,
+                                [trainset_dir4, exp_dir1, sr2, np7],
+                                [info],
+                                api_name="train_preprocess",
+                            )
+                        but2.click(
+                            extract_f0_feature,
+                                [
+                                    gpus6,
+                                    np7,
+                                    f0method8,
+                                    if_f0_3,
+                                    exp_dir1,
+                                    version19,
+                                    gpus_rmvpe,
+                                ],
+                                [info],
+                                api_name="train_extract_f0_feature",
+                        )
+                        but4.click(train_index, [exp_dir1, version19], info)
+                        but3.click(
+                            click_train,
+                            [
+                                exp_dir1,
+                                sr2,
+                                if_f0_3,
+                                spk_id5,
+                                save_epoch10,
+                                total_epoch11,
+                                batch_size12,
+                                if_save_latest13,
+                                pretrained_G14,
+                                pretrained_D15,
+                                gpus16,
+                                if_cache_gpu17,
+                                if_save_every_weights18,
+                                version19,
+                            ],
+                            info,
+                            api_name="train_start",
+                        )
+                        but4.click(train_index, [exp_dir1, version19], info)
         
         with gr.TabItem(i18n("UVR5")):
             with gr.Group():
