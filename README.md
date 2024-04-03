@@ -16,7 +16,11 @@ Ilaria RVC is part of the Ilaria AI Suite wich includes various easy and powerfu
 
 ## 📦 Installation 📦
 
-At the moment, installation is not available as the project is still under development. 🚧
+Download and extract the zip you find in the latest release!🌟
+
+To run it, use Ilaria-RVC-Launcher.bat
+
+For updates or to download the additional pretrains, use the Ilaria-RVC-Assistant.bat 💖
 
 ## 🖥️ Usage 🖥️
 
