@@ -197,7 +197,7 @@ def change_info(path, info, name):
         ckpt["info"] = info
         if name == "":
             name = os.path.basename(path)
-        torch.save(ckpt, "models/pth/%s.pth" % name)
+        torch.save(ckpt, "models/pth/%s" % name)
         return "Success."
     except:
         return traceback.format_exc()
