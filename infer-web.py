@@ -9,6 +9,12 @@ sys.path.append(now_dir)
 load_dotenv()
 from infer.modules.vc.modules import VC
 from infer.modules.uvr5.modules import UVRHANDLER
+from infer.lib.train.process_ckpt import (
+    change_info,
+    extract_small_model,
+    merge,
+    show_info,
+)
 from i18n.i18n import I18nAuto
 from configs.config import Config
 from sklearn.cluster import MiniBatchKMeans
@@ -1618,6 +1624,74 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                           inputs=[audio_input],
                           outputs=[training_info_output]
             )
+                         
+                with gr.Accordion(i18n("Model Fusion"), open=False):
+                    with gr.Group():
+                        gr.Markdown(value=i18n("Strongly suggested to use only very clean models."))
+                        with gr.Row():
+                            ckpt_a = gr.Textbox(
+                                label=i18n("Path of the first .pth"), value="", interactive=True
+                            )
+                            ckpt_b = gr.Textbox(
+                                label=i18n("Path of the second .pth"), value="", interactive=True
+                            )
+                            alpha_a = gr.Slider(
+                                minimum=0,
+                                maximum=1,
+                                label=i18n("Weight of the first model over the second"),
+                                value=0.5,
+                                interactive=True,
+                            )
+                        with gr.Row():
+                            sr_ = gr.Radio(
+                                label=i18n("Sample rate of both models"),
+                                choices=["32k","40k", "48k"],
+                                value="32k",
+                                interactive=True,
+                            )
+                            if_f0_ = gr.Radio(
+                                label=i18n("Pitch Guidance"),
+                                choices=[i18n("是"), i18n("否")],
+                                value=i18n("是"),
+                                interactive=True,
+                            )
+                            info__ = gr.Textbox(
+                                label=i18n("Add informations to the model"),
+                                value="",
+                                max_lines=8,
+                                interactive=True,
+                                visible=False
+                            )
+                            name_to_save0 = gr.Textbox(
+                                label=i18n("Final Model name"),
+                                value="",
+                                max_lines=1,
+                                interactive=True,
+                            )
+                            version_2 = gr.Radio(
+                                label=i18n("Versions of the models"),
+                                choices=["v1", "v2"],
+                                value="v1",
+                                interactive=True,
+                            )
+                        with gr.Row():
+                            but6 = gr.Button(i18n("Fuse the two models"), variant="primary")
+                            info4 = gr.Textbox(label=i18n("Output"), value="", max_lines=8)
+                        but6.click(
+                            merge,
+                            [
+                                ckpt_a,
+                                ckpt_b,
+                                alpha_a,
+                                sr_,
+                                if_f0_,
+                                info__,
+                                name_to_save0,
+                                version_2,
+                            ],
+                            info4,
+                            api_name="ckpt_merge",
+                        )
 
                 with gr.Accordion('Credits', open=False):
                     gr.Markdown('''
