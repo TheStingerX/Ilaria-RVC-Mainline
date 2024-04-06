@@ -1479,7 +1479,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     train_index(exp_dir1, version19)
                     click_train(exp_dir1, sr2, if_f0_3, spk_id5, save_epoch10, total_epoch11, batch_size12, if_save_latest13, 
                                 pretrained_G14, pretrained_D15, gpus16, if_cache_gpu17, if_save_every_weights18, version19)
-
+                with gr.Row():
                     with gr.TabItem("One-Click Training"):
                         but5 = gr.Button('Train', variant="primary")
                         but5.click(
