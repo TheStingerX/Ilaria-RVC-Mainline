@@ -87,11 +87,6 @@ uvr5_names = [
     'MDX23C-8KFFT-InstVoc_HQ_2.ckpt',
     'UVR-DeEcho-DeReverb.pth',
     'UVR-Denoise',
-    'Demucs v4: htdemucs_ft',
-    'kuielab_b_bass.onnx',
-    'kuielab_b_drums.onnx',
-    'kuielab_b_other.onnx',
-    'kuielab_b_vocals.onnx'
 ]
 if config.dml:
     def forward_dml(ctx, x, scale):
@@ -1482,6 +1477,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 with gr.Row():
                     with gr.TabItem("One-Click Training"):
                         but5 = gr.Button('Train', variant="primary")
+                        info = gr.Textbox(label=i18n("Output"), value="", max_lines=5, lines=5)
                         but5.click(
                             one_click_train,
                             [trainset_dir4, exp_dir1, sr2, gpus6, np7, f0method8, if_f0_3, version19, gpus_rmvpe]
@@ -1555,7 +1551,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                 with gr.Row():
                     audios = gr.File()
                     output_dir = gr.Textbox('opt/', label='Output Directory')
-                    model_name = gr.Dropdown(choices=uvr5_names)
+                    model_name = gr.Dropdown(choices=uvr5_names, label='Models')
                     model_status = gr.Textbox(placeholder='Waiting...', interactive=False, label='Model Information')
                 
                 with gr.Row():
