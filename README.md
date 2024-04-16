@@ -86,6 +86,17 @@ Don’t worry if you’re not a tech whiz. Ilaria RVC is designed to be easy to 
 - **simplcup**: Ov2Super
 - **mustar22**: RIN_E3 & Snowie
 
+### Colab Port
+
+- **Angetyde**
+- **l3af**
+- **Poopmaster**
+- **Hina**
+
+### HuggingFace Port
+
+- **Nick088**
+
 ### Other
 
 - **RVC Project**: Original Developers
