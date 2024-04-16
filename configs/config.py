@@ -33,7 +33,8 @@ version_config_list = [
     "v2/SnowieV3.1-32k.json",
     "v2/SnowieV3.1-40k.json",
     "v2/SnowieV3.1-48k.json",
-    "v2/SnowieV3.1-RinE3-40K.json"
+    "v2/SnowieV3.1-RinE3-40K.json",
+    "v2/Italia-32k.json"
 ]
 
 

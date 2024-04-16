@@ -640,6 +640,7 @@ sr2sr = {
     "SnowieV3.1-32k": 32000, 
     "SnowieV3.1-48k": 48000, 
     "SnowieV3.1-RinE3-40K": 40000,
+    "Italia-32k": 32000
 }
 
 
