@@ -1,6 +1,7 @@
 ![Ilaria AI Suite](./docs/ilariarvcmainline.png)
 ***
-[![Static Badge](https://img.shields.io/badge/GitHub-Source%20Code-s?logo=GitHub)]([https://github.com/TheStingerX/Ilaria-RVC](https://github.com/TheStingerX/Ilaria-RVC-Mainline)) [![Static Badge](https://img.shields.io/badge/AI%20Hub-Discord%20Server-s?logo=Discord&color=%09%237289da)](https://discord.gg/aihub) [![Static Badge](https://img.shields.io/badge/Ko--Fi-s?logo=Ko-Fi&label=Support%20me%20on&labelColor=434b57&color=FF5E5B)](https://ko-fi.com/ilariaowo)
+[![Static Badge](https://img.shields.io/badge/GitHub-Source%20Code-s?logo=GitHub)]([https://github.com/TheStingerX/Ilaria-RVC](https://github.com/TheStingerX/Ilaria-RVC-Mainline)) [![Static Badge](https://img.shields.io/badge/AI%20Hub-Discord%20Server-s?logo=Discord&color=%09%237289da)](https://discord.gg/aihub) [![Static Badge](https://img.shields.io/badge/Ko--Fi-s?logo=Ko-Fi&label=Support%20me%20on&labelColor=434b57&color=FF5E5B)](https://ko-fi.com/ilariaowo) [![Static Badge](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Space-s?labelColor=YELLOW&color=FFEA00)](https://huggingface.co/spaces/TheStinger/Ilaria_RVC_Mainline) [![Static Badge](https://img.shields.io/badge/Colab-s?logo=googlecolab&label=Google&color=FFA500)](https://colab.research.google.com/drive/1mHKTGH5e3SAyDSBss1KtiYRbDdQzwSMs)
+
 ***
 <p align="center">
   <h1>Ilaria RVC Mainline 💖</h1>
