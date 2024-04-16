@@ -1707,34 +1707,46 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     gr.Markdown('''
                 ## All the amazing people who worked on this!
                 
-                ### Developers
-                
-                - **Ilaria**: Founder, Lead Developer
-                - **Yui**: Training feature
-                - **GDR-**: Inference feature
-                - **Poopmaster**: Model downloader, Model importer
-                - **kitlemonfoot**: Ilaria TTS implementation
-                - **eddycrack864**: UVR5 implementation
-                - **Diablo**: Bug Fixes, UI help.
-                - **Mikus**: Ilaria Updater & Downloader  
-                - **Mitsubachi1**: Bug Fixes, UI help
-                                
-                ### Beta Tester
-                
-                - **Charlotte**: Beta Tester
-                - **RME**: Beta Tester
-                - **Delik**: Beta Tester
-                
-                ### Pretrains Makers
-
-                - **simplcup**: Ov2Super
-                - **mustar22**: RIN_E3
-                - **mustar22**: Snowie
-                
-                ### Other
-                
-                - **RVC Project**: Original Developers
-                - **yumereborn**: Ilaria RVC image
+		### Developers
+		
+		- **Ilaria**: Founder, Lead Developer
+		- **Yui**: Training feature
+		- **GDR-**: Inference feature
+		- **Poopmaster**: Model downloader, Model importer
+		- **kitlemonfoot**: Ilaria TTS implementation
+		- **eddycrack864**: UVR5 implementation
+		- **Mikus**: Ilaria Updater & Downloader
+		- **Diablo**: Pretrain Automation, UI features, Various fixes
+		
+		### Beta Tester
+		
+		- **Charlotte**: Beta Tester, Advisor
+		- **mrm0dz**: Beta Tester, Advisor
+		- **RME**: Beta Tester
+		- **Delik**: Beta Tester
+		- **inductivegrub**: Beta Tester
+		- **l3af**: Beta Tester, Helper
+		
+		### Pretrains Makers
+		
+		- **simplcup**: Ov2Super
+		- **mustar22**: RIN_E3 & Snowie
+		
+		### Colab Port
+		
+		- **Angetyde**
+		- **l3af**
+		- **Poopmaster**
+		- **Hina**
+		
+		### HuggingFace Port
+		
+		- **Nick088**
+		
+		### Other
+		
+		- **RVC Project**: Original Developers
+		- **yumereborn**: Ilaria RVC image
                                 
                 ### **In loving memory of JLabDX** 🕊️
                 ''')
