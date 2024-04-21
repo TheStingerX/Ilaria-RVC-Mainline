@@ -898,7 +898,7 @@ def change_f0_method(f0method8):
 vc_output1 = gr.Textbox(label=i18n("Console"))
 vc_output2 = gr.Audio(label=i18n("Audio output"))
 
-with gr.Blocks(title="Ilaria RVC 💖") as app:
+with gr.Blocks(theme='ParityError/Interstellar', title="Ilaria RVC ") as app:
     gr.Markdown("<h1>  Ilaria RVC 💖   </h1>")
     gr.Markdown(value=i18n("Made with 💖 by Ilaria | Support her on [Ko-Fi](https://ko-fi.com/ilariaowo)"))
     gr.Markdown(i18n("For voice models and support join [AI Hub](https://discord.gg/AIHUB)"))
@@ -1549,7 +1549,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
 
                 uvr_handler = UVRHANDLER()
                 with gr.Row():
-                    audios = gr.File()
+                    audios = gr.Textbox(label='input Directory')
                     output_dir = gr.Textbox('opt/', label='Output Directory')
                     model_name = gr.Dropdown(choices=uvr5_names, label='Models')
                     model_status = gr.Textbox(placeholder='Waiting...', interactive=False, label='Model Information')
