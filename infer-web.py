@@ -327,6 +327,19 @@ def import_files(file):
 def import_button_click(file):
     return import_files(file)
 
+def calculate_remaining_time(epochs, seconds_per_epoch):
+    total_seconds = epochs * seconds_per_epoch
+
+    hours = total_seconds // 3600
+    minutes = (total_seconds % 3600) // 60
+    seconds = total_seconds % 60
+
+    if hours == 0:
+        return f"{int(minutes)} minutes"
+    elif hours == 1:
+        return f"{int(hours)} hour and {int(minutes)} minutes"
+    else:
+        return f"{int(hours)} hours and {int(minutes)} minutes"
 
 def get_audio_duration(audio_file_path):
     audio_info = sf.info(audio_file_path)
@@ -1547,36 +1560,38 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                     )
                 )
 
-                uvr_handler = UVRHANDLER()
-                with gr.Row():
-                    audios = gr.File()
-                    output_dir = gr.Textbox('opt/', label='Output Directory')
-                    model_name = gr.Dropdown(choices=uvr5_names, label='Models')
-                    model_status = gr.Textbox(placeholder='Waiting...', interactive=False, label='Model Information')
-                
-                with gr.Row():
-                    LOADMODELBUTTON = gr.Button('Load Model', variant="primary")
-                    LOADMODELBUTTON.click(
-                        fn=uvr_handler.loadmodel,
-                        inputs=[model_name, output_dir],
-                        outputs=[model_status]
-                    )
-                    CLEARMODELBUTTON = gr.Button('Unload Model', variant="primary")
-                    CLEARMODELBUTTON.click(
-                        fn=uvr_handler.deloadmodel,
-                        outputs=[model_status]
-                    )
-
-                with gr.Column():
+                with gr.Group():
+                    uvr_handler = UVRHANDLER()
                     with gr.Row():
-                        inst = gr.Audio(show_download_button=True, interactive=False, label='Instrumental')
-                        vocal = gr.Audio(show_download_button=True, interactive=False, label='Vocals')
-                    UVRBUTTON = gr.Button('Extract', variant="primary")
-                    UVRBUTTON.click(
-                        fn=uvr_handler.uvr,
-                        inputs=[audios],
-                        outputs=[inst, vocal]
-                    )
+                        audios = gr.File()
+                        output_dir = gr.Textbox('opt/', label='Output Directory')
+                        model_name = gr.Dropdown(choices=uvr5_names, label='Models')
+                        model_status = gr.Textbox(placeholder='Waiting...', interactive=False, label='Model Information')
+                    
+                    with gr.Row():
+                        LOADMODELBUTTON = gr.Button('Load Model', variant="primary")
+                        LOADMODELBUTTON.click(
+                            fn=uvr_handler.loadmodel,
+                            inputs=[model_name, output_dir],
+                            outputs=[model_status]
+                        )
+                        CLEARMODELBUTTON = gr.Button('Unload Model', variant="primary")
+                        CLEARMODELBUTTON.click(
+                            fn=uvr_handler.deloadmodel,
+                            outputs=[model_status]
+                        )
+
+                    with gr.Group():
+                        with gr.Column():
+                            with gr.Row():
+                                inst = gr.Audio(show_download_button=True, interactive=False, label='Instrumental')
+                                vocal = gr.Audio(show_download_button=True, interactive=False, label='Vocals')
+                            UVRBUTTON = gr.Button('Extract', variant="primary")
+                            UVRBUTTON.click(
+                                fn=uvr_handler.uvr,
+                                inputs=[audios],
+                                outputs=[inst, vocal]
+                            )
 
         with gr.TabItem(i18n("Extra")):
                 with gr.Accordion('Model Info', open=False):
@@ -1596,7 +1611,6 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                          inputs=[sid1, protect0, protect1],
                          outputs=[spk_item, protect0, protect1, file_index2, file_index4, modelload_out]
                         )
-                
                         
                 with gr.Accordion('Audio Analyser', open=False):
                     with gr.Column():
@@ -1633,7 +1647,20 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                           fn=on_button_click,
                           inputs=[audio_input],
                           outputs=[training_info_output]
-            )
+                        )
+                         
+                with gr.Accordion('Training Time Calculator', open=False):
+                    with gr.Column():
+                        epochs_input = gr.Number(label="Number of Epochs")
+                        seconds_input = gr.Number(label="Seconds per Epoch")
+                        calculate_button = gr.Button("Calculate Time Remaining")
+                        remaining_time_output = gr.Textbox(label="Remaining Time", interactive=False)
+                        
+                        calculate_button.click(
+                            fn=calculate_remaining_time,
+                            inputs=[epochs_input, seconds_input],
+                            outputs=[remaining_time_output]
+                        )
                          
                 with gr.Accordion(i18n("Model Fusion"), open=False):
                     with gr.Group():
@@ -1652,6 +1679,7 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                                 value=0.5,
                                 interactive=True,
                             )
+                    with gr.Group():
                         with gr.Row():
                             sr_ = gr.Radio(
                                 label=i18n("Sample rate of both models"),
@@ -1681,9 +1709,10 @@ with gr.Blocks(title="Ilaria RVC 💖") as app:
                             version_2 = gr.Radio(
                                 label=i18n("Versions of the models"),
                                 choices=["v1", "v2"],
-                                value="v1",
+                                value="v2",
                                 interactive=True,
                             )
+                    with gr.Group():
                         with gr.Row():
                             but6 = gr.Button(i18n("Fuse the two models"), variant="primary")
                             info4 = gr.Textbox(label=i18n("Output"), value="", max_lines=8)
