@@ -6,7 +6,8 @@ Actively supported versions are the following:
 
 | Version | Supported          |
 | ------- | ------------------ |
-| Beta 2   | :white_check_mark: |
+| Golden Beta   | :white_check_mark: |
+| Beta 2   | :x: |
 | Beta 1   | :x:                |
 
 ## Reporting a Vulnerability
