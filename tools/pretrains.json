@@ -38,5 +38,25 @@
   "Itaila-32k": {
     "D": "https://huggingface.co/TheStinger/itaila/resolve/main/ItaIla_32k_D.pth",
     "G": "https://huggingface.co/TheStinger/itaila/resolve/main/ItaIla_32k_G.pth"
+  },
+  "Titan-32k": {
+    "D": "https://huggingface.co/blaise-tk/TITAN/resolve/main/models/medium/32k/pretrained/D-f032k-TITAN-Medium.pth",
+    "G": "https://huggingface.co/blaise-tk/TITAN/resolve/main/models/medium/32k/pretrained/G-f040k-TITAN-Medium.pth"
+  },
+  "Titan-40k": {
+    "D": "https://huggingface.co/blaise-tk/TITAN/resolve/main/models/medium/40k/pretrained/D-f040k-TITAN-Medium.pth",
+    "G": "https://huggingface.co/blaise-tk/TITAN/resolve/main/models/medium/40k/pretrained/G-f040k-TITAN-Medium.pth"
+  },
+  "KLMv7s-32k": {
+    "D": "https://huggingface.co/SeoulStreamingStation/KLMv7s/resolve/main/D_KLMv7s_Batch2_32k.pth?download=true",
+    "G": "https://huggingface.co/SeoulStreamingStation/KLMv7s/resolve/main/G_KLMv7s_Batch2_32k.pth?download=true"
+  },
+  "KLMv7s-40k": {
+    "D": "https://huggingface.co/SeoulStreamingStation/KLMv7s/resolve/main/D_KLMv7s_Batch2_40k.pth?download=true",
+    "G": "https://huggingface.co/SeoulStreamingStation/KLMv7s/resolve/main/G_KLMv7s_Batch2_40k.pth?download=true"
+  },
+  "KLMv7s-48k": {
+    "D": "https://huggingface.co/SeoulStreamingStation/KLMv7s/resolve/main/D_KLMv7s_Batch2_48k.pth?download=true",
+    "G": "https://huggingface.co/SeoulStreamingStation/KLMv7s/resolve/main/G_KLMv7s_Batch2_48k.pth?download=true"
   }
 }
