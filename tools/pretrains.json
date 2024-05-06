@@ -58,5 +58,9 @@
   "KLMv7s-48k": {
     "D": "https://huggingface.co/SeoulStreamingStation/KLMv7s/resolve/main/D_KLMv7s_Batch2_48k.pth?download=true",
     "G": "https://huggingface.co/SeoulStreamingStation/KLMv7s/resolve/main/G_KLMv7s_Batch2_48k.pth?download=true"
+  },
+    "DMR-32k": {
+    "D": "https://huggingface.co/Razer112/DMR_Pretrain/resolve/main/D_dmrV0-5.pth?download=true",
+    "G": "https://huggingface.co/Razer112/DMR_Pretrain/resolve/main/G_dmrV0-5.pth?download=true"
   }
 }
